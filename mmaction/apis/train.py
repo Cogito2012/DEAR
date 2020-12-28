@@ -7,7 +7,7 @@ from mmcv.runner import (DistSamplerSeedHook, EpochBasedRunner, OptimizerHook,
 from mmcv.runner.hooks import Fp16OptimizerHook
 
 from ..core import (DistEpochEvalHook, EpochEvalHook,
-                    OmniSourceDistSamplerSeedHook, OmniSourceRunner)
+                    OmniSourceDistSamplerSeedHook, OmniSourceRunner, AnnealingRunner)
 from ..datasets import build_dataloader, build_dataset
 from ..utils import get_root_logger
 
@@ -42,7 +42,8 @@ def train_model(model,
         workers_per_gpu=cfg.data.get('workers_per_gpu', 1),
         num_gpus=len(cfg.gpu_ids),
         dist=distributed,
-        seed=cfg.seed)
+        seed=cfg.seed,
+        pin_memory=cfg.data.get('pin_memory', True))  # by default, pin_memory=True
     dataloader_setting = dict(dataloader_setting,
                               **cfg.data.get('train_dataloader', {}))
 
@@ -85,7 +86,13 @@ def train_model(model,
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
 
-    Runner = OmniSourceRunner if cfg.omnisource else EpochBasedRunner
+    # Runner = OmniSourceRunner if cfg.omnisource else EpochBasedRunner
+    if cfg.omnisource:
+        Runner = OmniSourceRunner
+    elif cfg.get('annealing_runner', False):
+        Runner = AnnealingRunner  # add annealing runner support
+    else:
+        Runner = EpochBasedRunner
     runner = Runner(
         model,
         optimizer=optimizer,
@@ -124,6 +131,7 @@ def train_model(model,
             # cfg.gpus will be ignored if distributed
             num_gpus=len(cfg.gpu_ids),
             dist=distributed,
+            pin_memory=cfg.data.get('pin_memory', True),  # by default, pin_memory=True
             shuffle=False)
         dataloader_setting = dict(dataloader_setting,
                                   **cfg.data.get('val_dataloader', {}))
@@ -138,4 +146,6 @@ def train_model(model,
     runner_kwargs = dict()
     if cfg.omnisource:
         runner_kwargs = dict(train_ratio=train_ratio)
+    if cfg.get('annealing_runner', False):
+        runner_kwargs.update(annealing=True)
     runner.run(data_loaders, cfg.workflow, cfg.total_epochs, **runner_kwargs)

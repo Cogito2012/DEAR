@@ -119,3 +119,10 @@ work_dirs/
 
 # Profile
 *.prof
+
+# added by wentao
+*.avi
+temp/
+*log*
+*.npz
+*.pkl
