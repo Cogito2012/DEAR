@@ -20,7 +20,7 @@ def parse_args():
     # model config
     parser.add_argument('--config', help='test config file path')
     parser.add_argument('--checkpoint', help='checkpoint file/url')
-    parser.add_argument('--uncertainty', default='BALD', help='the uncertainty estimation method')
+    parser.add_argument('--uncertainty', default='BALD', choices=['BALD', 'Entropy'], help='the uncertainty estimation method')
     parser.add_argument('--forward_pass', type=int, default=10, help='the number of forward passes')
     # data config
     parser.add_argument('--label_names', help='label file')
@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--ood_data', help='the split file of out-of-distribution testing data')
     # env config
     parser.add_argument('--device', type=str, default='cuda:0', help='CPU/CUDA device option')
-    parser.add_argument('--result_file', help='result file')
+    parser.add_argument('--result_tag', help='result file tag')
     args = parser.parse_args()
     return args
 
@@ -198,9 +198,10 @@ def main():
     cfg.data.test.test_mode = True
     cfg.test_pipeline[2].type = 'PyAVDecode'
     
-    if not os.path.exists(args.result_file):
+    result_file = os.path.join('./experiments/results', args.result_tag + '_result.npz')
+    if not os.path.exists(result_file):
         # prepare result path
-        result_dir = os.path.dirname(args.result_file)
+        result_dir = os.path.dirname(result_file)
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
         # run inference (OOD)
@@ -210,24 +211,21 @@ def main():
         ind_uncertainties, ind_results = run_inference(model, dataset='ucf101', npass=args.forward_pass)
         # ind_uncertainties, ind_results = run_inference_simple(args.ind_data, model, args.forward_pass, desc='IND data')
         # save
-        np.savez(args.result_file[:-4], ind_unctt=ind_uncertainties, ood_unctt=ood_uncertainties, ind_score=ind_results, ood_score=ood_results)
+        np.savez(result_file[:-4], ind_unctt=ind_uncertainties, ood_unctt=ood_uncertainties, ind_score=ind_results, ood_score=ood_results)
     else:
-        results = np.load(args.result_file, allow_pickle=True)
+        results = np.load(result_file, allow_pickle=True)
         ind_uncertainties = results['ind_unctt']
         ood_uncertainties = results['ood_unctt']
     # visualize
     plt.figure(figsize=(5,4))  # (w, h)
-    data_len = min(len(ind_uncertainties), len(ood_uncertainties))
-    # data_len = 200 if data_len > 200 else data_len
-    data_plot = np.stack((ind_uncertainties[:data_len], ood_uncertainties[:data_len])).transpose()
-    plt.hist(data_plot, 50, histtype='bar', color=['blue', 'red'], label=['in-distribution (UCF-101)', 'out-of-distribution (HMDB-51)'])
+    plt.hist([ind_uncertainties, ood_uncertainties], 50, density=True, histtype='bar', color=['blue', 'red'], label=['in-distribution (UCF-101)', 'out-of-distribution (HMDB-51)'])
     # plt.xlim(0, 0.02)
     # plt.xticks(np.arange(0, 0.021, 0.005))
     plt.legend(prop={'size': 10})
-    plt.xlabel('BALD Uncertainty')
+    plt.xlabel('%s Uncertainty'%(args.uncertainty))
     plt.ylabel('density')
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(args.result_file), 'BALD_distribution.png'))
+    plt.savefig(os.path.join('./experiments/results', args.result_tag + '_distribution.png'))
 
 if __name__ == '__main__':
 
