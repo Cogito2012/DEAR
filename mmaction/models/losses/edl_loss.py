@@ -4,6 +4,14 @@ import torch.nn.functional as F
 from ..registry import LOSSES
 from .base import BaseWeightedLoss
 
+def relu_evidence(y):
+    return F.relu(y)
+
+def exp_evidence(y):
+    return torch.exp(torch.clamp(y, -10, 10))
+
+def softplus_evidence(y):
+    return F.softplus(y)
 
 @LOSSES.register_module()
 class EvidenceLoss(BaseWeightedLoss):
@@ -21,15 +29,6 @@ class EvidenceLoss(BaseWeightedLoss):
         self.annealing_method = annealing_method
         self.annealing_start = annealing_start
         self.annealing_step = annealing_step
-
-    def relu_evidence(self, y):
-        return F.relu(y)
-
-    def exp_evidence(self, y):
-        return torch.exp(torch.clamp(y, -10, 10))
-
-    def softplus_evidence(self, y):
-        return F.softplus(y)
 
     def kl_divergence(self, alpha):
         beta = torch.ones([1, self.num_classes], dtype=torch.float32).to(alpha.device)
@@ -140,11 +139,11 @@ class EvidenceLoss(BaseWeightedLoss):
         """
         # get evidence
         if self.evidence == 'relu':
-            evidence = self.relu_evidence(output)
+            evidence = relu_evidence(output)
         elif self.evidence == 'exp':
-            evidence = self.exp_evidence(output)
+            evidence = exp_evidence(output)
         elif self.evidence == 'softplus':
-            evidence = self.softplus_evidence(output)
+            evidence = softplus_evidence(output)
         else:
             raise NotImplementedError
         alpha = evidence + 1
