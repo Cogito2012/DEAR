@@ -126,3 +126,4 @@ temp/
 *log*
 *.npz
 *.pkl
+experiments/results
