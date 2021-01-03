@@ -36,12 +36,13 @@ test_pipeline = [
     dict(type='ThreeCrop', crop_size=256),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='FormatShape', input_format='NCTHW'),
-    dict(type='Collect', keys=['imgs'], meta_keys=[]),
+    dict(type='Collect', keys=['imgs', 'label'], meta_keys=[]),
     dict(type='ToTensor', keys=['imgs'])
 ]
 data = dict(
-    videos_per_gpu=1,
+    videos_per_gpu=8,
     workers_per_gpu=4,
+    pin_memory=True,
     test=dict(
         type=dataset_type,
         ann_file=None,
