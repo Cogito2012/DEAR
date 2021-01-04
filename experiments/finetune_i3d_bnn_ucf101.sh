@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES=$1 python tools/train.py configs/recognition/i3d/finetune_u
 	--validate \
 	--seed 0 \
 	--deterministic \
-	--gpu-ids 1
+	--gpu-ids 0
 
 cd $pwd_dir
 echo "Experiments finished!"

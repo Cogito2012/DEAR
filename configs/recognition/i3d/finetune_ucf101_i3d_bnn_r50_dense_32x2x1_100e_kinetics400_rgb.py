@@ -21,17 +21,18 @@ model = dict(
 train_cfg = dict(loss_weight=1e-6, npass=2)
 test_cfg = dict(average_clips='prob', npass=10)
 # dataset settings
-dataset_type = 'RawframeDataset'
-data_root = 'data/ucf101/rawframes'
-data_root_val = 'data/ucf101/rawframes'
-ann_file_train = 'data/ucf101/ucf101_train_split_1_rawframes.txt'
-ann_file_val = 'data/ucf101/ucf101_val_split_1_rawframes.txt'
-ann_file_test = 'data/ucf101/ucf101_val_split_1_rawframes.txt'
+dataset_type = 'VideoDataset'
+data_root = 'data/ucf101/videos'
+data_root_val = 'data/ucf101/videos'
+ann_file_train = 'data/ucf101/ucf101_train_split_1_videos.txt'
+ann_file_val = 'data/ucf101/ucf101_val_split_1_videos.txt'
+ann_file_test = 'data/ucf101/ucf101_val_split_1_videos.txt'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
 train_pipeline = [
+    dict(type='OpenCVInit', num_threads=1),
     dict(type='DenseSampleFrames', clip_len=32, frame_interval=2, num_clips=1),
-    dict(type='RawFrameDecode'),
+    dict(type='OpenCVDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(
         type='MultiScaleCrop',
@@ -47,13 +48,14 @@ train_pipeline = [
     dict(type='ToTensor', keys=['imgs', 'label'])
 ]
 val_pipeline = [
+    dict(type='OpenCVInit', num_threads=1),
     dict(
         type='DenseSampleFrames',
         clip_len=32,
         frame_interval=2,
         num_clips=1,
         test_mode=True),
-    dict(type='RawFrameDecode'),
+    dict(type='OpenCVDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='CenterCrop', crop_size=224),
     dict(type='Flip', flip_ratio=0),
@@ -63,13 +65,14 @@ val_pipeline = [
     dict(type='ToTensor', keys=['imgs'])
 ]
 test_pipeline = [
+    dict(type='OpenCVInit', num_threads=1),
     dict(
         type='DenseSampleFrames',
         clip_len=32,
         frame_interval=2,
         num_clips=1,
         test_mode=True),
-    dict(type='RawFrameDecode'),
+    dict(type='OpenCVDecode'),
     dict(type='Resize', scale=(-1, 256)),
     dict(type='ThreeCrop', crop_size=256),
     dict(type='Flip', flip_ratio=0),
