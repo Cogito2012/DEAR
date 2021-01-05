@@ -15,9 +15,9 @@ def parse_args():
     '''
     parser = argparse.ArgumentParser(description='Compare the performance of openness')
     # model config
-    parser.add_argument('--baselines', nargs='+', default=['I3D_Dropout_BALD', 'I3D_BNN_BALD'])
-    parser.add_argument('--thresholds', nargs='+', type=float, default=[0.048563, 0.006867])
-    parser.add_argument('--styles', nargs='+', default=['-b', '-r'])
+    parser.add_argument('--baselines', nargs='+', default=['I3D_Dropout_BALD', 'I3D_BNN_BALD', 'I3D_EDLlog_EDL'])
+    parser.add_argument('--thresholds', nargs='+', type=float, default=[0.048563, 0.006867, 0.497144])
+    parser.add_argument('--styles', nargs='+', default=['-b', '-k', '-r'])
     parser.add_argument('--ind_ncls', type=int, help='the number of classes in known dataset')
     parser.add_argument('--ood_ncls', type=int, help='the number of classes in unknwon dataset')
     args = parser.parse_args()
@@ -26,7 +26,7 @@ def parse_args():
 
 def main():
 
-    plt.figure(figsize=(5,3))  # (w, h)
+    plt.figure(figsize=(8,5))  # (w, h)
     for style, thresh, baseline in zip(args.styles, args.thresholds, args.baselines):
         result_file = os.path.join('./experiments/results', baseline + '_result.npz')
         assert os.path.exists(result_file), "File not found! Run ood_detection first!"
@@ -70,7 +70,7 @@ def main():
             macro_F1_list.append(macro_F1)
 
         # draw comparison curves
-        plt.plot(openness_list, macro_F1_list, style, linewidth=2)
+        plt.plot(openness_list, macro_F1_list, style, linewidth=1)
 
     plt.xlim(0, 11)
     plt.ylim(0.7, 1.01)
