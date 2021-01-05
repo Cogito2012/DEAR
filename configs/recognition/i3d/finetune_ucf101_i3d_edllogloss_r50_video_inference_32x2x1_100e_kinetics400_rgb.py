@@ -14,13 +14,13 @@ model = dict(
         type='I3DHead',
         loss_cls=dict(type='EvidenceLoss',
                       num_classes=101,
-                      evidence='relu',
+                      evidence='exp',
                       loss_type='log',
-                      annealing_method='step'),
+                      annealing_method='exp'),
         num_classes=101,
         in_channels=2048,
         spatial_type='avg',
-        dropout_ratio=0.5,
+        dropout_ratio=0,
         init_std=0.01))
 # model training and testing settings
 test_cfg = dict(average_clips='prob')
@@ -41,11 +41,11 @@ test_pipeline = [
     dict(type='ThreeCrop', crop_size=256),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='FormatShape', input_format='NCTHW'),
-    dict(type='Collect', keys=['imgs'], meta_keys=[]),
+    dict(type='Collect', keys=['imgs', 'label'], meta_keys=[]),
     dict(type='ToTensor', keys=['imgs'])
 ]
 data = dict(
-    videos_per_gpu=1,
+    videos_per_gpu=8,
     workers_per_gpu=4,
     test=dict(
         type=dataset_type,

@@ -20,9 +20,7 @@ def parse_args():
     # model config
     parser.add_argument('--config', help='test config file path')
     parser.add_argument('--checkpoint', help='checkpoint file/url')
-    parser.add_argument('--forward_pass', type=int, default=10, help='the number of forward passes')
     # data config
-    parser.add_argument('--label_names', help='label file')
     parser.add_argument('--ind_data', help='the split file of in-distribution testing data')
     parser.add_argument('--ood_data', help='the split file of out-of-distribution testing data')
     # env config
@@ -72,7 +70,7 @@ def run_inference(model, dataset='ucf101'):
 
     # run inference
     model = MMDataParallel(model, device_ids=[0])
-    all_uncertainties, all_results = [], []
+    all_uncertainties, all_results, all_gts = [], [], []
     prog_bar = mmcv.ProgressBar(len(data_loader.dataset))
     for i, data in enumerate(data_loader):
         with torch.no_grad():
@@ -80,15 +78,24 @@ def run_inference(model, dataset='ucf101'):
             evidence = get_evidence(torch.from_numpy(output))
             alpha = evidence + 1
             uncertainty = cfg.model.cls_head.num_classes / torch.sum(alpha, dim=1)
-            scores = alpha / torch.sum(alpha, dim=1)
-        all_uncertainties.append(float(uncertainty.numpy()))
-        all_results.append(scores.numpy().squeeze())
+            scores = alpha / torch.sum(alpha, dim=1, keepdim=True)
+        all_uncertainties.append(uncertainty.numpy())
+        # compute the predictions and save labels
+        preds = np.argmax(scores.numpy(), axis=1)
+        all_results.append(preds)
+
+        labels = data['label'].numpy()
+        all_gts.append(labels)
 
         # use the first key as main key to calculate the batch size
         batch_size = len(next(iter(data.values())))
         for _ in range(batch_size):
             prog_bar.update()
-    return all_uncertainties, all_results
+    all_uncertainties = np.concatenate(all_uncertainties, axis=0)
+    all_results = np.concatenate(all_results, axis=0)
+    all_gts = np.concatenate(all_gts, axis=0)
+
+    return all_uncertainties, all_results, all_gts
 
 
 def main():
@@ -113,19 +120,27 @@ def main():
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
         # run inference (OOD)
-        ood_uncertainties, ood_results = run_inference(model, dataset='hmdb51')
+        ood_uncertainties, ood_results, ood_labels = run_inference(model, dataset='hmdb51')
         # run inference (IND)
-        ind_uncertainties, ind_results = run_inference(model, dataset='ucf101')
+        ind_uncertainties, ind_results, ind_labels = run_inference(model, dataset='ucf101')
         # save
-        np.savez(result_file[:-4], ind_unctt=ind_uncertainties, ood_unctt=ood_uncertainties, ind_score=ind_results, ood_score=ood_results)
+        np.savez(result_file[:-4], ind_unctt=ind_uncertainties, ood_unctt=ood_uncertainties, 
+                                   ind_pred=ind_results, ood_pred=ood_results,
+                                   ind_label=ind_labels, ood_label=ood_labels)
     else:
         results = np.load(result_file, allow_pickle=True)
-        ind_uncertainties = results['ind_unctt']
-        ood_uncertainties = results['ood_unctt']
+        ind_uncertainties = results['ind_unctt']  # (N1,)
+        ood_uncertainties = results['ood_unctt']  # (N2,)
+        ind_results = results['ind_pred']  # (N1,)
+        ood_results = results['ood_pred']  # (N2,)
+        ind_labels = results['ind_label']
+        ood_labels = results['ood_label']
     # visualize
     plt.figure(figsize=(5,4))  # (w, h)
-    plt.hist([ind_uncertainties, ood_uncertainties], 50, density=True, histtype='bar', color=['blue', 'red'], label=['in-distribution (UCF-101)', 'out-of-distribution (HMDB-51)'])
-    plt.xlim(0.9, 1.1)
+    plt.hist([ind_uncertainties, ood_uncertainties], 50, 
+            density=True, histtype='bar', color=['blue', 'red'], 
+            label=['in-distribution (UCF-101)', 'out-of-distribution (HMDB-51)'])
+    # plt.xlim(0.9, 1.1)
     # plt.xticks(np.arange(0, 0.021, 0.005))
     plt.legend(prop={'size': 10})
     plt.xlabel('EDL Uncertainty')

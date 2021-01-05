@@ -127,4 +127,6 @@ temp/
 *.pkl
 experiments/results
 experiments/logs
+experiments/run_*
+*backup*
 tools/data/mit/log*
