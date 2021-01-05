@@ -9,26 +9,24 @@ def parse_args():
         source activate mmaction
         CUDA_VISIBLE_DEVICES=0 python experiments/compare_openness.py \
             --baselines I3D_Dropout_BALD I3D_BNN_BALD \
-            --styles '-b*' '-r^' \
+            --styles '-b' '-r' \
             --ind_ncls 101 \
-            --ood_ncls 51 \
-            --threshold 0.001
+            --ood_ncls 51
     '''
     parser = argparse.ArgumentParser(description='Compare the performance of openness')
     # model config
-    parser.add_argument('--baselines', '--names-list', nargs='+', default=['I3D_Dropout_BALD', 'I3D_BNN_BALD'])
-    parser.add_argument('--thresholds', '--names-list', nargs='+', default=[0.0, 0.0])
-    parser.add_argument('--styles', '--names-list', nargs='+', default=['-b*', '-r^'])
+    parser.add_argument('--baselines', nargs='+', default=['I3D_Dropout_BALD', 'I3D_BNN_BALD'])
+    parser.add_argument('--thresholds', nargs='+', type=float, default=[0.048563, 0.006867])
+    parser.add_argument('--styles', nargs='+', default=['-b', '-r'])
     parser.add_argument('--ind_ncls', type=int, help='the number of classes in known dataset')
     parser.add_argument('--ood_ncls', type=int, help='the number of classes in unknwon dataset')
-
     args = parser.parse_args()
     return args
 
 
 def main():
 
-    plt.figure(figsize=(5,4))  # (w, h)
+    plt.figure(figsize=(5,3))  # (w, h)
     for style, thresh, baseline in zip(args.styles, args.thresholds, args.baselines):
         result_file = os.path.join('./experiments/results', baseline + '_result.npz')
         assert os.path.exists(result_file), "File not found! Run ood_detection first!"
@@ -50,15 +48,15 @@ def main():
         preds[uncertains <= thresh] = 0
         labels = np.concatenate((np.zeros_like(ind_labels), np.ones_like(ood_labels)))
         aupr = roc_auc_score(labels, preds)
-        print('Model: %s, ClosedSet Accuracy (multi-class): %.3lf, OpenSet AUC (bin-class): %.3lf'%(baseline, acc, aupr))
+        print('Model: %s, ClosedSet Accuracy (multi-class): %.3lf, OpenSet AUC (bin-class): %.3lf'%(baseline, acc * 100, aupr))
         
         # open set F1 score (multi-class)
         ind_results[ind_uncertainties > thresh] = args.ind_ncls  # falsely rejection
         macro_F1_list = [f1_score(ind_labels, ind_results, average='macro')]
-        openness_list = [0.0]
+        openness_list = [0]
         for n in range(args.ood_ncls):
             ncls_novel = n + 1
-            openness = 1 - np.sqrt((2 * args.ind_ncls) / (2 * args.ind_ncls + ncls_novel))
+            openness = (1 - np.sqrt((2 * args.ind_ncls) / (2 * args.ind_ncls + ncls_novel))) * 100
             openness_list.append(openness)
             # select the subset of ood samples 
             ood_sub_results = ood_results[ood_labels <= n]
@@ -72,9 +70,16 @@ def main():
             macro_F1_list.append(macro_F1)
 
         # draw comparison curves
-        plt.plot(openness_list, macro_F1_list, style, linewidth=2, markersize=12)
-        plt.tight_layout()
-        plt.savefig('./experiments/results/F1_openness_compare.png')
+        plt.plot(openness_list, macro_F1_list, style, linewidth=2)
+
+    plt.xlim(0, 11)
+    plt.ylim(0.7, 1.01)
+    plt.xlabel('Openness (%)')
+    plt.ylabel('macro F1')
+    plt.grid('on')
+    plt.legend(args.baselines)
+    plt.tight_layout()
+    plt.savefig('./experiments/results/F1_openness_compare.png')
 
 
 if __name__ == "__main__":

@@ -25,6 +25,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=8, help='the testing batch size')
     # env config
     parser.add_argument('--device', type=str, default='cuda:0', help='CPU/CUDA device option')
+    parser.add_argument('--result_tag', help='result file tag')
     args = parser.parse_args()
     return args
 
@@ -53,7 +54,7 @@ def compute_uncertainty(predictions, method='BALD'):
         uncertain_score[~np.isfinite] = 9999
     return uncertain_score
 
-def main():
+def run_inference():
 
     # build the recognizer from a config file and checkpoint file/url
     model = init_recognizer(
@@ -112,13 +113,7 @@ def main():
             prog_bar.update()
     
     all_uncertainties = np.concatenate(all_uncertainties, axis=0)
-
-    # evaluation by macro-F1 within (C1 + 1) classes
-    uncertain_sort = np.sort(all_uncertainties)[::-1]  # sort the uncertainties with descending order
-    N = all_uncertainties.shape[0]
-    topK = N - int(N * 0.95)
-    threshold = uncertain_sort[topK-1]
-    print('The %s uncertainty threshold on UCF-101 train set: %.3lf'%(args.uncertainty, threshold))
+    return all_uncertainties
 
 
 if __name__ == '__main__':
@@ -127,4 +122,19 @@ if __name__ == '__main__':
     # assign the desired device.
     device = torch.device(args.device)
 
-    main()
+    result_file = os.path.join('./experiments/results/', args.result_tag + '_trainset_uncertainties.npz')
+    if not os.path.exists(result_file):
+        # run the inference on the entire training set (takes long time)
+        all_uncertainties = run_inference()
+        np.savez(result_file[:-4], uncertainty=all_uncertainties)
+    else:
+        result = np.load(result_file)
+        all_uncertainties = result['uncertainty']
+
+    # evaluation by macro-F1 within (C1 + 1) classes
+    uncertain_sort = np.sort(all_uncertainties)[::-1]  # sort the uncertainties with descending order
+    N = all_uncertainties.shape[0]
+    topK = N - int(N * 0.95)
+    threshold = uncertain_sort[topK-1]
+
+    print('The model %s uncertainty threshold on UCF-101 train set: %lf'%(args.result_tag, threshold))
