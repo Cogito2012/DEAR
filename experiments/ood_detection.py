@@ -134,15 +134,11 @@ def run_inference_simple(data_list, model, forward_pass, desc=''):
     return all_uncertainties, all_results, all_gts
 
 
-def run_inference(model, dataset='ucf101', npass=10):
+def run_inference(model, datalist_file, npass=10):
     # switch config for different dataset
     cfg = model.cfg
-    if dataset=='ucf101':
-        cfg.data.test.ann_file = args.ind_data
-        cfg.data.test.data_prefix = os.path.join(os.path.dirname(args.ind_data), 'videos')
-    else:
-        cfg.data.test.ann_file = args.ood_data
-        cfg.data.test.data_prefix = os.path.join(os.path.dirname(args.ood_data), 'videos')
+    cfg.data.test.ann_file = datalist_file
+    cfg.data.test.data_prefix = os.path.join(os.path.dirname(datalist_file), 'videos')
 
     # build the dataloader
     dataset = build_dataset(cfg.data.test, dict(test_mode=True))
@@ -219,10 +215,10 @@ def main():
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
         # run inference (OOD)
-        ood_uncertainties, ood_results, ood_labels = run_inference(model, dataset='hmdb51', npass=args.forward_pass)
+        ood_uncertainties, ood_results, ood_labels = run_inference(model, args.ood_data, npass=args.forward_pass)
         # ood_uncertainties, ood_results = run_inference_simple(args.ood_data, model, args.forward_pass, desc='OOD data')
         # run inference (IND)
-        ind_uncertainties, ind_results, ind_labels = run_inference(model, dataset='ucf101', npass=args.forward_pass)
+        ind_uncertainties, ind_results, ind_labels = run_inference(model, args.ind_data, npass=args.forward_pass)
         # ind_uncertainties, ind_results = run_inference_simple(args.ind_data, model, args.forward_pass, desc='IND data')
         # save
         np.savez(result_file[:-4], ind_unctt=ind_uncertainties, ood_unctt=ood_uncertainties, 
@@ -237,8 +233,12 @@ def main():
         ind_labels = results['ind_label']
         ood_labels = results['ood_label']
     # visualize
+    dataName_ind = args.ind_data.split('/')[-2].upper()
+    dataName_ood = args.ood_data.split('/')[-2].upper()
     plt.figure(figsize=(5,4))  # (w, h)
-    plt.hist([ind_uncertainties, ood_uncertainties], 50, density=True, histtype='bar', color=['blue', 'red'], label=['in-distribution (UCF-101)', 'out-of-distribution (HMDB-51)'])
+    plt.hist([ind_uncertainties, ood_uncertainties], 50, 
+            density=True, histtype='bar', color=['blue', 'red'], 
+            label=['in-distribution (%s)'%(dataName_ind), 'out-of-distribution (%s)'%(dataName_ood)])
     # plt.xlim(0, 0.02)
     # plt.xticks(np.arange(0, 0.021, 0.005))
     plt.legend(prop={'size': 10})
