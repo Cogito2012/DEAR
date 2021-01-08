@@ -16,6 +16,7 @@ model = dict(
                       num_classes=101,
                       evidence='exp',
                       loss_type='log',
+                      with_avuloss=True,
                       annealing_method='exp'),
         num_classes=101,
         in_channels=2048,
@@ -87,8 +88,8 @@ test_pipeline = [
     dict(type='ToTensor', keys=['imgs'])
 ]
 data = dict(
-    videos_per_gpu=2,  # set to 8 for training
-    workers_per_gpu=2,  # set to 8 for training
+    videos_per_gpu=8,  # set to 8 for training
+    workers_per_gpu=4,  # set to 4 for training
     train=dict(
         type=dataset_type,
         ann_file=ann_file_train,

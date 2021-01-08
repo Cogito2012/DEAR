@@ -19,6 +19,7 @@ class EvidenceLoss(BaseWeightedLoss):
     def __init__(self, num_classes, 
                  evidence='relu', 
                  loss_type='mse', 
+                 with_avuloss=False,
                  annealing_method='step', 
                  annealing_start=0.01, 
                  annealing_step=10):
@@ -26,9 +27,11 @@ class EvidenceLoss(BaseWeightedLoss):
         self.num_classes = num_classes
         self.evidence = evidence
         self.loss_type = loss_type
+        self.with_avuloss = with_avuloss
         self.annealing_method = annealing_method
         self.annealing_start = annealing_start
         self.annealing_step = annealing_step
+        self.eps = 1e-10
 
     def kl_divergence(self, alpha):
         beta = torch.ones([1, self.num_classes], dtype=torch.float32).to(alpha.device)
@@ -68,6 +71,12 @@ class EvidenceLoss(BaseWeightedLoss):
         kl_div = annealing_coef * \
             self.kl_divergence(kl_alpha)
         losses.update({'loss_kl': kl_div, 'lambda': annealing_coef})
+
+        if self.with_avuloss:
+            S = torch.sum(alpha, dim=1, keepdim=True)  # Dirichlet strength
+            pred_score = alpha / S
+            uncertainty = self.num_classes / S
+            # avu_loss = annealing_coef * 
         return losses
 
     def ce_loss(self, target, y, alpha, annealing_coef):
@@ -95,7 +104,7 @@ class EvidenceLoss(BaseWeightedLoss):
         losses.update({'loss_kl': kl_div, 'lambda': annealing_coef})
         return losses
 
-    def edl_loss(self, func, y, alpha, annealing_coef):
+    def edl_loss(self, func, y, alpha, annealing_coef, target):
         """Used for both loss_type == 'log' and loss_type == 'digamma'
         func: function handler (torch.log, or torch.digamma)
         y: the one-hot labels (batchsize, num_classes)
@@ -111,6 +120,16 @@ class EvidenceLoss(BaseWeightedLoss):
         kl_div = annealing_coef * \
             self.kl_divergence(kl_alpha)
         losses.update({'loss_kl': kl_div, 'lambda': annealing_coef})
+
+        if self.with_avuloss:
+            pred_scores, pred_cls = torch.max(alpha / S, 1, keepdim=True)
+            uncertainty = self.num_classes / S
+            acc_match = torch.reshape(torch.eq(pred_cls, target.unsqueeze(1)).float(), (-1, 1))
+            acc_uncertain = - pred_scores * torch.log(1 - uncertainty + self.eps)
+            inacc_certain = - (1 - pred_scores) * torch.log(uncertainty + self.eps)
+            acc_vs_uncertain = acc_match * acc_uncertain + (1 - acc_match) * inacc_certain
+            avu_loss = annealing_coef * acc_vs_uncertain
+            losses.update({'loss_avu': avu_loss})
         return losses
 
     def compute_annealing_coef(self, **kwargs):
@@ -158,9 +177,9 @@ class EvidenceLoss(BaseWeightedLoss):
         if self.loss_type == 'mse':
             results = self.mse_loss(y, alpha, annealing_coef)
         elif self.loss_type == 'log':
-            results = self.edl_loss(torch.log, y, alpha, annealing_coef)
+            results = self.edl_loss(torch.log, y, alpha, annealing_coef, target)
         elif self.loss_type == 'digamma':
-            results = self.edl_loss(torch.digamma, y, alpha, annealing_coef)
+            results = self.edl_loss(torch.digamma, y, alpha, annealing_coef, target)
         elif self.loss_type == 'cross_entropy':
             results = self.ce_loss(target, y, alpha, annealing_coef)
         else:
