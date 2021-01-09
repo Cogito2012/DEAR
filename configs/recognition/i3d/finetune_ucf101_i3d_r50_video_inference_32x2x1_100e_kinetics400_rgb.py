@@ -42,7 +42,6 @@ test_pipeline = [
 data = dict(
     videos_per_gpu=8,
     workers_per_gpu=4,
-    pin_memory=True,
     test=dict(
         type=dataset_type,
         ann_file=None,

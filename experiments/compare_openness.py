@@ -17,6 +17,7 @@ def parse_args():
     parser.add_argument('--ind_ncls', type=int, help='the number of classes in known dataset')
     parser.add_argument('--ood_ncls', type=int, help='the number of classes in unknwon dataset')
     parser.add_argument('--num_rand', type=int, default=10, help='the number of random selection for ood classes')
+    parser.add_argument('--result_png', default='F1_openness_compare.png')
     args = parser.parse_args()
     return args
 
@@ -79,14 +80,13 @@ def main():
         plt.plot(openness_list, macro_F1_list, style, linewidth=2)
         # plt.fill_between(openness_list, macro_F1_list - std_list, macro_F1_list + std_list, style)
 
-    plt.xlim(0, 11)
     plt.ylim(0.6, 0.7)
     plt.xlabel('Openness (%)')
     plt.ylabel('macro F1')
     plt.grid('on')
     plt.legend(args.baselines)
     plt.tight_layout()
-    plt.savefig('./experiments/results/F1_openness_compare.png')
+    plt.savefig('./experiments/results/%s'%(args.result_png))
 
 
 if __name__ == "__main__":
