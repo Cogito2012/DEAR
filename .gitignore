@@ -125,9 +125,9 @@ work_dirs/
 temp/
 *.npz
 *.pkl
-experiments/results
-experiments/logs
-experiments/run_*
+experiments/*/results
+experiments/*/logs
+experiments/*/run_*
 *backup*
 tools/data/mit/log*
 tools/data/*log*
