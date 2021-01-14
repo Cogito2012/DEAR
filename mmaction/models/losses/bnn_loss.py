@@ -32,8 +32,7 @@ class BayesianNNLoss(nn.Module):
         # parse the output
         log_prior = output_dict['log_prior']
         log_posterior = output_dict['log_posterior']
-        uncertain_alea = output_dict['aleatoric']
-        uncertain_epis = output_dict['epistemic']
+
         # complexity regularizer
         loss_complexity = beta * (log_posterior - log_prior)
         # total loss
@@ -45,11 +44,11 @@ class BayesianNNLoss(nn.Module):
                   'LOSS_total': loss,  # items for monitoring
                   'log_posterior': beta * log_posterior,
                   'log_prior': beta * log_prior, 
-                  'aleatoric': uncertain_alea,
-                  'epistemic': uncertain_epis,
                   'top1_acc': torch.tensor(top_k_acc[0], device=cls_score.device),
                   'top5_acc': torch.tensor(top_k_acc[1], device=cls_score.device)
                   }
+        if 'aleatoric' in output_dict: losses.update({'aleatoric': output_dict['aleatoric']})
+        if 'epistemic' in output_dict: losses.update({'epistemic': output_dict['epistemic']})
         return losses
 
 
