@@ -25,7 +25,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=8, help='the testing batch size')
     # env config
     parser.add_argument('--device', type=str, default='cuda:0', help='CPU/CUDA device option')
-    parser.add_argument('--result_tag', help='result file tag')
+    parser.add_argument('--result_prefix', help='result file prefix')
     args = parser.parse_args()
     return args
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     # assign the desired device.
     device = torch.device(args.device)
 
-    result_file = os.path.join('./experiments', args.result_tag + '_trainset_uncertainties.npz')
+    result_file = os.path.join(args.result_prefix + '_trainset_uncertainties.npz')
     if not os.path.exists(result_file):
         # run the inference on the entire training set (takes long time)
         all_uncertainties = run_inference()
@@ -180,4 +180,4 @@ if __name__ == '__main__':
     topK = N - int(N * 0.95)
     threshold = uncertain_sort[topK-1]
 
-    print('The model %s uncertainty threshold on UCF-101 train set: %lf'%(args.result_tag, threshold))
+    print('The model %s uncertainty threshold on UCF-101 train set: %lf'%(args.result_prefix.split('/')[-1], threshold))

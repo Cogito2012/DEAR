@@ -26,7 +26,7 @@ case ${OOD_DATASET} in
     exit
     ;;
 esac
-
+RESULT_DIR='experiments/tpn_slowonly/results'
 
 case ${MODEL} in
     dropout)
@@ -37,7 +37,7 @@ case ${MODEL} in
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
         --uncertainty BALD \
-        --result_tag tpn_slowonly/TPN_SlowOnly_Dropout_BALD_${OOD_DATASET}
+        --result_prefix ${RESULT_DIR}/TPN_SlowOnly_Dropout_BALD_${OOD_DATASET}
     ;;
     bnn)
     # Bayesian Neural Network
@@ -47,7 +47,7 @@ case ${MODEL} in
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
         --uncertainty BALD \
-        --result_tag tpn_slowonly/TPN_SlowOnly_BNN_BALD_${OOD_DATASET}
+        --result_prefix ${RESULT_DIR}/TPN_SlowOnly_BNN_BALD_${OOD_DATASET}
     ;;
     edl)
     # Evidential Deep Learning
@@ -57,7 +57,7 @@ case ${MODEL} in
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
         --uncertainty EDL \
-        --result_tag tpn_slowonly/TPN_SlowOnly_EDLlog_EDL_${OOD_DATASET}
+        --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlog_EDL_${OOD_DATASET}
     ;;
     edl_avuc)
     # Evidential Deep Learning with AvU Calibration
@@ -67,7 +67,7 @@ case ${MODEL} in
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
         --uncertainty EDL \
-        --result_tag tpn_slowonly/TPN_SlowOnly_EDLlogAvUC_EDL_${OOD_DATASET}
+        --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlogAvUC_EDL_${OOD_DATASET}
     ;;
     *)
     echo "Invalid model: "${MODEL}

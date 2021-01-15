@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--ood_data', help='the split file of out-of-distribution testing data')
     # env config
     parser.add_argument('--device', type=str, default='cuda:0', help='CPU/CUDA device option')
-    parser.add_argument('--result_tag', help='result file tag')
+    parser.add_argument('--result_prefix', help='result file prefix')
     args = parser.parse_args()
     return args
 
@@ -186,7 +186,7 @@ def main():
     torch.backends.cudnn.benchmark = True
     cfg.data.test.test_mode = True
     
-    result_file = os.path.join('./experiments', args.result_tag + '_result.npz')
+    result_file = os.path.join(args.result_prefix + '_result.npz')
     if not os.path.exists(result_file):
         # prepare result path
         result_dir = os.path.dirname(result_file)
@@ -219,7 +219,7 @@ def main():
     plt.xlabel('%s Uncertainty'%(args.uncertainty))
     plt.ylabel('density')
     plt.tight_layout()
-    plt.savefig(os.path.join('./experiments', args.result_tag + '_distribution.png'))
+    plt.savefig(os.path.join(args.result_prefix + '_distribution.png'))
 
 if __name__ == '__main__':
 
