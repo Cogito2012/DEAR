@@ -32,10 +32,33 @@ def parse_args():
     return args
 
 
+def apply_dropout(m):
+    if type(m) == torch.nn.Dropout:
+        m.train()
+
+
 def update_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
 
+
+def compute_uncertainty(predictions, method='BALD'):
+    """Compute the entropy
+       scores: (B x C x T)
+    """
+    expected_p = np.mean(predictions, axis=-1)  # mean of all forward passes (C,)
+    entropy_expected_p = - np.sum(xlogy(expected_p, expected_p), axis=1)  # the entropy of expect_p (across classes)
+    if method == 'Entropy':
+        uncertain_score = entropy_expected_p
+    elif method == 'BALD':
+        expected_entropy = - np.mean(np.sum(xlogy(predictions, predictions), axis=1), axis=-1)  # mean of entropies (across classes), (scalar)
+        uncertain_score = entropy_expected_p - expected_entropy
+    else:
+        raise NotImplementedError
+    if not np.all(np.isfinite(uncertain_score)):
+        uncertain_score[~np.isfinite] = 9999
+    return uncertain_score
+    
 
 def run_stochastic_inference(model, data_loader, npass=10):
     # run inference

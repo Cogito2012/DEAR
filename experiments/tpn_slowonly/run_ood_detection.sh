@@ -56,6 +56,7 @@ case ${MODEL} in
         --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss/latest.pth \
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
+        --uncertainty EDL \
         --result_tag tpn_slowonly/TPN_SlowOnly_EDLlog_EDL_${OOD_DATASET}
     ;;
     edl_avuc)
@@ -65,6 +66,7 @@ case ${MODEL} in
         --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_avuc/latest.pth \
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
+        --uncertainty EDL \
         --result_tag tpn_slowonly/TPN_SlowOnly_EDLlogAvUC_EDL_${OOD_DATASET}
     ;;
     *)
