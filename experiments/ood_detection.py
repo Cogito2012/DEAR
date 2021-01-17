@@ -13,6 +13,8 @@ import numpy as np
 from scipy.special import xlogy
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 def parse_args():

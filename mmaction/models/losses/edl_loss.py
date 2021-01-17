@@ -19,6 +19,7 @@ class EvidenceLoss(BaseWeightedLoss):
     def __init__(self, num_classes, 
                  evidence='relu', 
                  loss_type='mse', 
+                 with_kldiv=True,
                  with_avuloss=False,
                  annealing_method='step', 
                  annealing_start=0.01, 
@@ -27,6 +28,7 @@ class EvidenceLoss(BaseWeightedLoss):
         self.num_classes = num_classes
         self.evidence = evidence
         self.loss_type = loss_type
+        self.with_kldiv = with_kldiv
         self.with_avuloss = with_avuloss
         self.annealing_method = annealing_method
         self.annealing_start = annealing_start
@@ -67,10 +69,12 @@ class EvidenceLoss(BaseWeightedLoss):
         loglikelihood_err, loglikelihood_var = self.loglikelihood_loss(y, alpha)
         losses.update({'loss_cls': loglikelihood_err, 'loss_var': loglikelihood_var})
 
-        kl_alpha = (alpha - 1) * (1 - y) + 1
-        kl_div = annealing_coef * \
-            self.kl_divergence(kl_alpha)
-        losses.update({'loss_kl': kl_div, 'lambda': annealing_coef})
+        losses.update({'lambda': annealing_coef})
+        if self.with_kldiv:
+            kl_alpha = (alpha - 1) * (1 - y) + 1
+            kl_div = annealing_coef * \
+                self.kl_divergence(kl_alpha)
+            losses.update({'loss_kl': kl_div})
 
         if self.with_avuloss:
             S = torch.sum(alpha, dim=1, keepdim=True)  # Dirichlet strength
@@ -116,10 +120,12 @@ class EvidenceLoss(BaseWeightedLoss):
         A = torch.sum(y * (func(S) - func(alpha)), dim=1, keepdim=True)
         losses.update({'loss_cls': A})
 
-        kl_alpha = (alpha - 1) * (1 - y) + 1
-        kl_div = annealing_coef * \
-            self.kl_divergence(kl_alpha)
-        losses.update({'loss_kl': kl_div, 'lambda': annealing_coef})
+        losses.update({'lambda': annealing_coef})
+        if self.with_kldiv:
+            kl_alpha = (alpha - 1) * (1 - y) + 1
+            kl_div = annealing_coef * \
+                self.kl_divergence(kl_alpha)
+            losses.update({'loss_kl': kl_div})
 
         if self.with_avuloss:
             pred_scores, pred_cls = torch.max(alpha / S, 1, keepdim=True)
