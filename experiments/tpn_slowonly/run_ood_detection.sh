@@ -59,6 +59,16 @@ case ${MODEL} in
         --uncertainty EDL \
         --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlog_EDL_${OOD_DATASET}
     ;;
+    edl_nokl)
+    # Evidential Deep Learning
+    CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
+        --config configs/recognition/tpn/inference_tpn_slowonly_dnn.py \
+        --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_nokl/latest.pth \
+        --ind_data ${IND_DATA} \
+        --ood_data ${OOD_DATA} \
+        --uncertainty EDL \
+        --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlogNoKL_EDL_${OOD_DATASET}
+    ;;
     edl_avuc)
     # Evidential Deep Learning with AvU Calibration
     CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \

@@ -24,8 +24,9 @@ esac
 # OOD Detection comparison
 python experiments/compare_openness.py \
     --base_model tpn_slowonly \
-    --baselines TPN_SlowOnly_Dropout_BALD TPN_SlowOnly_BNN_BALD TPN_SlowOnly_EDLlog_EDL TPN_SlowOnly_EDLlogAvUC_EDL TPN_SlowOnly_EDLlogNoKLAvUC_EDL \
-    --thresholds 0.000096 0.000007 0.495784 0.495783 0.495800 \
+    --baselines TPN_SlowOnly_Dropout_BALD TPN_SlowOnly_BNN_BALD TPN_SlowOnly_EDLlog_EDL TPN_SlowOnly_EDLlogAvUC_EDL TPN_SlowOnly_EDLlogNoKLAvUC_EDL TPN_SlowOnly_EDLlogNoKL_EDL \
+    --thresholds 0.000096 0.000007 0.495784 0.495783 0.495800 0.495806 \
+    --styles b k r g m c \
     --ood_data ${OOD_DATA} \
     --ood_ncls ${NUM_CLASSES} \
     --ind_ncls 101 \
