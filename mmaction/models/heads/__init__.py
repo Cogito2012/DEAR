@@ -9,8 +9,11 @@ from .tpn_bnn_head import TPNBNNHead
 from .tsm_head import TSMHead
 from .tsn_head import TSNHead
 from .x3d_head import X3DHead
+from .aux_head import AuxHead
+from .rebias_head import RebiasHead
+
 
 __all__ = [
     'TSNHead', 'I3DHead', 'I3DBNNHead', 'BaseHead', 'TSMHead', 'SlowFastHead', 'SSNHead',
-    'TPNHead', 'TPNBNNHead', 'AudioTSNHead', 'X3DHead'
+    'TPNHead', 'TPNBNNHead', 'AudioTSNHead', 'X3DHead', 'AuxHead', 'RebiasHead'
 ]

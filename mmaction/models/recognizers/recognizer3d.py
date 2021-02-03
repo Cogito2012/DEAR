@@ -64,3 +64,14 @@ class Recognizer3D(BaseRecognizer):
         """Defines the computation performed at every call when using gradcam
         utils."""
         return self._do_test(imgs)
+
+    def get_feat(self, imgs):
+        """Defines the computation performed at every call when using get_feat
+        utils."""
+        num_segs = imgs.shape[1]
+        imgs = imgs.reshape((-1, ) + imgs.shape[2:])
+
+        x = self.extract_feat(imgs)
+        if hasattr(self, 'neck'):
+            x, _ = self.neck(x)  # (num_clips * num_crops, 2048, 1, 8, 8)
+        return x

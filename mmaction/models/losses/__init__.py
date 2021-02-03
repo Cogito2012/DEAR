@@ -8,9 +8,10 @@ from .hvu_loss import HVULoss
 from .nll_loss import NLLLoss
 from .ohem_hinge_loss import OHEMHingeLoss
 from .ssn_loss import SSNLoss
+from .rebias_loss import RebiasLoss
 
 __all__ = [
     'BaseWeightedLoss', 'CrossEntropyLoss', 'NLLLoss', 'BCELossWithLogits',
     'BinaryLogisticRegressionLoss', 'BMNLoss', 'OHEMHingeLoss', 'SSNLoss',
-    'HVULoss', "BayesianNNLoss", "EvidenceLoss"
+    'HVULoss', "BayesianNNLoss", "EvidenceLoss", "RebiasLoss"
 ]

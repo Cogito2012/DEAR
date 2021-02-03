@@ -89,6 +89,16 @@ case ${MODEL} in
         --uncertainty EDL \
         --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlogNoKLAvUC_EDL_${OOD_DATASET}
     ;;
+    edl_nokl_avuc_rebias)
+    # Evidential Deep Learning (without KL divergence loss term) with AvU Calibration
+    CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
+        --config configs/recognition/tpn/inference_tpn_slowonly_dnn.py \
+        --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_nokl_avuc_rebiasHSIC/latest.pth \
+        --ind_data ${IND_DATA} \
+        --ood_data ${OOD_DATA} \
+        --uncertainty EDL \
+        --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlogNoKLAvUCRebiasHSIC_EDL_${OOD_DATASET}
+    ;;
     *)
     echo "Invalid model: "${MODEL}
     exit

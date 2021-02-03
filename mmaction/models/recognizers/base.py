@@ -163,6 +163,9 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
         if kwargs.get('gradcam', False):
             del kwargs['gradcam']
             return self.forward_gradcam(imgs, **kwargs)
+        if kwargs.get('get_feat', False):
+            del kwargs['get_feat']
+            return self.get_feat(imgs, **kwargs)
         if return_loss:
             if label is None:
                 raise ValueError('Label should not be None.')
