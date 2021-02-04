@@ -76,12 +76,21 @@ def extract_feature(video_files):
     return X
 
 
+def set_deterministic(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    np.random.seed(seed)  # Numpy module.
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.deterministic = True
+
 
 if __name__ == '__main__':
 
     args = parse_args()
     # assign the desired device.
     device = torch.device(args.device)
+    set_deterministic(0)
 
     known_classes = {'ParallelBars': 0, 'UnevenBars': 1, 'Diving': 2, 'Surfing': 3}
     # known_classes = {'ParallelBars': 0, 'UnevenBars': 1}

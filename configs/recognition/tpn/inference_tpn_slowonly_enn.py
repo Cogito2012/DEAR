@@ -35,7 +35,7 @@ model = dict(
         dropout_ratio=0.5,
         init_std=0.01))
 evidence='exp'  # only used for EDL
-test_cfg = dict(average_clips='evidence', evidence_type='exp')
+test_cfg = dict(average_clips='score')
 dataset_type = 'VideoDataset'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
