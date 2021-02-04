@@ -74,15 +74,15 @@ case ${MODEL} in
       --uncertainty EDL \
       --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlogNoKLAvUC_EDL
    ;;
-   edl_nokl_avuc_rebias)
+   edl_nokl_avuc_debias)
    #  get the EDL threshold for TPN_SlowOnly_EDL_AvUC model trained on UCF-101
    CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/get_threshold.py \
-      --config configs/recognition/tpn/inference_tpn_slowonly_dnn.py \
-      --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_nokl_avuc_rebias/latest.pth \
+      --config configs/recognition/tpn/inference_tpn_slowonly_enn.py \
+      --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_nokl_avuc_debias/latest.pth \
       --train_data ${TRAIN_DATA} \
       --batch_size ${BATCHSIZE} \
       --uncertainty EDL \
-      --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlogNoKLAvUCRebias_EDL
+      --result_prefix ${RESULT_DIR}/TPN_SlowOnly_EDLlogNoKLAvUCDebias_EDL
    ;;
    *)
     echo "Invalid model: "${MODEL}

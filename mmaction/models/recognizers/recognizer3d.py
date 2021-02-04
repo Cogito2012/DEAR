@@ -12,6 +12,11 @@ class Recognizer3D(BaseRecognizer):
         losses = dict()
 
         x = self.extract_feat(imgs)
+
+        if hasattr(self, 'debias_head'):
+            loss_debias = self.debias_head(x, labels.squeeze())
+            losses.update(loss_debias)
+
         if hasattr(self, 'neck'):
             x, loss_aux = self.neck(x, labels.squeeze())
             losses.update(loss_aux)

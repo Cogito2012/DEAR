@@ -30,6 +30,7 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
                  backbone,
                  cls_head,
                  neck=None,
+                 debias_head=None,
                  train_cfg=None,
                  test_cfg=None):
         super().__init__()
@@ -37,6 +38,8 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
         if neck is not None:
             self.neck = builder.build_neck(neck)
         self.cls_head = builder.build_head(cls_head)
+        if debias_head is not None:
+            self.debias_head = builder.build_head(debias_head)
 
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
@@ -58,6 +61,8 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
         self.cls_head.init_weights()
         if hasattr(self, 'neck'):
             self.neck.init_weights()
+        if hasattr(self, 'debias_head'):
+            self.debias_head.init_weights()
 
     @auto_fp16()
     def extract_feat(self, imgs):
@@ -71,6 +76,19 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
         """
         x = self.backbone(imgs)
         return x
+
+    def evidence_to_prob(self, output, evidence_type):
+        if evidence_type == 'relu':
+            from ..losses.edl_loss import relu_evidence as evidence
+        elif evidence_type == 'exp':
+            from ..losses.edl_loss import exp_evidence as evidence
+        elif evidence_type == 'softplus':
+            from ..losses.edl_loss import softplus_evidence as evidence
+        alpha = evidence(output) + 1
+        S = torch.sum(alpha, dim=-1, keepdim=True)
+        prob = alpha / S
+        return prob
+
 
     def average_clip(self, cls_score, num_segs=1):
         """Averaging class score over multiple clips.
@@ -90,10 +108,10 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
             raise KeyError('"average_clips" must defined in test_cfg\'s keys')
 
         average_clips = self.test_cfg['average_clips']
-        if average_clips not in ['score', 'prob', None]:
+        if average_clips not in ['score', 'prob', 'evidence', None]:
             raise ValueError(f'{average_clips} is not supported. '
                              f'Currently supported ones are '
-                             f'["score", "prob", None]')
+                             f'["score", "prob", "evidence", None]')
 
         if average_clips is None:
             return cls_score
@@ -104,6 +122,10 @@ class BaseRecognizer(nn.Module, metaclass=ABCMeta):
         if average_clips == 'prob':
             cls_score = F.softmax(cls_score, dim=2).mean(dim=1)
         elif average_clips == 'score':
+            cls_score = cls_score.mean(dim=1)
+        elif average_clips == 'evidence':
+            assert 'evidence_type' in self.test_cfg.keys()
+            cls_score = self.evidence_to_prob(cls_score, self.test_cfg['evidence_type'])
             cls_score = cls_score.mean(dim=1)
 
         return cls_score
