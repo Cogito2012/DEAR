@@ -83,7 +83,7 @@ def main():
         plt.plot(openness_list, macro_F1_list, style, linewidth=2)
         # plt.fill_between(openness_list, macro_F1_list - std_list, macro_F1_list + std_list, style)
 
-    plt.ylim(0.6, 0.8)
+    plt.ylim(0.5, 1.0)
     plt.xlabel('Openness (%)')
     plt.ylabel('macro F1')
     plt.grid('on')
