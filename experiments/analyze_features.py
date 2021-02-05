@@ -68,6 +68,9 @@ def extract_feature(video_files):
     torch.backends.cudnn.benchmark = True
     cfg.data.test.test_mode = True
 
+    if cfg.model.cls_head.type in ['I3DBNNHead', 'TPNBNNHead']:
+        model.test_cfg.npass = 1
+
     X = []
     for videofile in tqdm(video_files, total=len(video_files), desc='Extract Feature'):
         feature = inference_recognizer(model, videofile)  # (2048,)
@@ -127,11 +130,15 @@ if __name__ == '__main__':
 
     # run tSNE
     print('running tSNE...')
-    Y = TSNE(n_components=2).fit_transform(X)
+    Y = TSNE(n_components=2, random_state=0).fit_transform(X)
     for k, v in open_classes.items():
         inds = np.where(labels == v)[0]
         plt.scatter(Y[inds, 0], Y[inds, 1], 15, label=k)
     plt.legend()
     # plt.show()
+
+    # save the figure
+    result_path = os.path.dirname(args.result_file)
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
     plt.savefig(args.result_file)
-    print('Done!')
