@@ -147,7 +147,7 @@ class DebiasHead(BaseHead):
             loss = torch.trace(KH @ LH / (N - 1) ** 2)
         return loss
 
-    def forward(self, x, target=None):
+    def forward(self, x, num_segs=None, target=None):
         """Defines the computation performed at every call.
 
         Args:
@@ -157,6 +157,9 @@ class DebiasHead(BaseHead):
             torch.Tensor: The classification scores for input samples.
         """
         feat = x.clone() if isinstance(x, torch.Tensor) else x[-2].clone()
+        if len(feat.size()) == 4:  # for 2D recognizer
+            assert num_segs is not None
+            feat = feat.view((-1, num_segs) + feat.size()[1:]).transpose(1, 2).contiguous()
         # one-hot embedding for the target
         y = torch.eye(self.num_classes).to(feat.device)
         y = y[target]

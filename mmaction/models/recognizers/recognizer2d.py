@@ -15,6 +15,11 @@ class Recognizer2D(BaseRecognizer):
         losses = dict()
 
         x = self.extract_feat(imgs)
+
+        if hasattr(self, 'debias_head'):
+            loss_debias = self.debias_head(x, num_segs, labels.squeeze())
+            losses.update(loss_debias)
+
         if hasattr(self, 'neck'):
             x = [
                 each.reshape((-1, num_segs) +
@@ -98,3 +103,15 @@ class Recognizer2D(BaseRecognizer):
         """Defines the computation performed at every call when using gradcam
         utils."""
         return self._do_test(imgs)
+
+    def get_feat(self, imgs):
+        """Defines the computation performed at every call when using get_feat
+        utils."""
+        batches = imgs.shape[0]
+        imgs = imgs.reshape((-1, ) + imgs.shape[2:])
+        num_segs = imgs.shape[0] // batches
+
+        x = self.extract_feat(imgs)
+        if hasattr(self, 'neck'):
+            x, _ = self.neck(x)
+        return x
