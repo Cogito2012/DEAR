@@ -21,6 +21,7 @@ class EvidenceLoss(BaseWeightedLoss):
                  loss_type='mse', 
                  with_kldiv=True,
                  with_avuloss=False,
+                 disentangle=False,
                  annealing_method='step', 
                  annealing_start=0.01, 
                  annealing_step=10):
@@ -30,6 +31,7 @@ class EvidenceLoss(BaseWeightedLoss):
         self.loss_type = loss_type
         self.with_kldiv = with_kldiv
         self.with_avuloss = with_avuloss
+        self.disentangle = disentangle
         self.annealing_method = annealing_method
         self.annealing_start = annealing_start
         self.annealing_step = annealing_step
@@ -131,10 +133,12 @@ class EvidenceLoss(BaseWeightedLoss):
             pred_scores, pred_cls = torch.max(alpha / S, 1, keepdim=True)
             uncertainty = self.num_classes / S
             acc_match = torch.reshape(torch.eq(pred_cls, target.unsqueeze(1)).float(), (-1, 1))
-            acc_uncertain = - pred_scores * torch.log(1 - uncertainty + self.eps)
-            inacc_certain = - (1 - pred_scores) * torch.log(uncertainty + self.eps)
-            # acc_vs_uncertain = acc_match * acc_uncertain + (1 - acc_match) * inacc_certain
-            # avu_loss = annealing_coef * acc_vs_uncertain
+            if self.disentangle:
+                acc_uncertain = - torch.log(pred_scores * (1 - uncertainty) + self.eps)
+                inacc_certain = - torch.log((1 - pred_scores) * uncertainty + self.eps)
+            else:
+                acc_uncertain = - pred_scores * torch.log(1 - uncertainty + self.eps)
+                inacc_certain = - (1 - pred_scores) * torch.log(uncertainty + self.eps)
             avu_loss = annealing_coef * acc_match * acc_uncertain + (1 - annealing_coef) * (1 - acc_match) * inacc_certain
             losses.update({'loss_avu': avu_loss})
         return losses
