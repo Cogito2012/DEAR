@@ -33,22 +33,25 @@ for k, v in annotation.items():
 
         output_filename = event_name + '.mp4'
 
-        command = [
-            'ffmpeg', '-i',
-            '"%s"' % video_path, '-ss',
-            str(start_time), '-t',
-            str(end_time - start_time), '-c:v', 'libx264', '-c:a', 'copy',
-            '-threads', '8', '-loglevel', 'panic',
-            '"%s"' % osp.join(event_root, output_filename)
-        ]
-        command = ' '.join(command)
-        try:
-            subprocess.check_output(
-                command, shell=True, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError:
-            print(
-                f'Trimming of the Event {event_name} of Video {k} Failed',
-                flush=True)
+        if not os.path.exists(osp.join(event_root, output_filename)):
+            command = [
+                'ffmpeg', '-i',
+                '"%s"' % video_path, '-ss',
+                str(start_time), '-t',
+                str(end_time - start_time), '-c:v', 'libx264', '-c:a', 'copy',
+                '-threads', '8', '-loglevel', 'panic',
+                '"%s"' % osp.join(event_root, output_filename)
+            ]
+            command = ' '.join(command)
+            try:
+                subprocess.check_output(
+                    command, shell=True, stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError:
+                print(
+                    f'Trimming of the Event {event_name} of Video {k} Failed',
+                    flush=True)
+        else:
+            print("Result event file exists, ignored!")
 
         segments = event_anno['segments']
         if segments is not None:
