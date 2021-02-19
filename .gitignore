@@ -127,7 +127,6 @@ temp/
 *.pkl
 experiments/*/results
 experiments/*/logs
-experiments/i3d/run_*
 *backup*
 tools/data/mit/log*
 tools/data/*log*
