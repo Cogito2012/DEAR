@@ -5,9 +5,9 @@ cd ../../
 
 source activate mmaction
 
-CUDA_VISIBLE_DEVICES=$1 python tools/test.py configs/recognition/i3d/finetune_ucf101_i3d_bnn_r50_dense_32x2x1_100e_kinetics400_rgb.py \
-	work_dirs/i3d/finetune_ucf101_i3d_bnn_r50_dense_32x2x1_100e_kinetics400_rgb/latest.pth \
-	--out work_dirs/i3d/test_ucf101_i3d_bnn_r50_dense_32x2x1_100e_kinetics400_rgb.pkl \
+CUDA_VISIBLE_DEVICES=$1 python tools/test.py configs/recognition/i3d/finetune_ucf101_i3d_bnn.py \
+	work_dirs/i3d/finetune_ucf101_i3d_bnn/latest.pth \
+	--out work_dirs/i3d/test_ucf101_i3d_bnn.pkl \
 	--eval top_k_accuracy mean_class_accuracy
 
 cd $pwd_dir

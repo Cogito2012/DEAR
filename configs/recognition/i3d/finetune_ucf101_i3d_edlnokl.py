@@ -1,6 +1,13 @@
 # model settings
+evidence_loss = dict(type='EvidenceLoss',
+                      num_classes=101,
+                      evidence='exp',
+                      loss_type='log',
+                      with_kldiv=False,
+                      with_avuloss=False,
+                      annealing_method='exp')
 model = dict(
-    type='Recognizer3DBNN',
+    type='Recognizer3D',
     backbone=dict(
         type='ResNet3d',
         pretrained2d=True,
@@ -11,15 +18,16 @@ model = dict(
         inflate=((1, 1, 1), (1, 0, 1, 0), (1, 0, 1, 0, 1, 0), (0, 1, 0)),
         zero_init_residual=False),
     cls_head=dict(
-        type='I3DBNNHead',
+        type='I3DHead',
+        loss_cls=evidence_loss,
         num_classes=101,
         in_channels=2048,
         spatial_type='avg',
-        dropout_ratio=0,
+        dropout_ratio=0.5,
         init_std=0.01))
 # model training and testing settings
-train_cfg = dict(loss_weight=1e-6, npass=2)
-test_cfg = dict(average_clips='prob', npass=10)
+train_cfg = None
+test_cfg = dict(average_clips='evidence', evidence_type='exp')
 # dataset settings
 dataset_type = 'VideoDataset'
 data_root = 'data/ucf101/videos'
@@ -82,8 +90,8 @@ test_pipeline = [
     dict(type='ToTensor', keys=['imgs'])
 ]
 data = dict(
-    videos_per_gpu=8,  # set to 8 for training
-    workers_per_gpu=2,  # set to 2 for training
+    videos_per_gpu=8,  # set to 2 for evaluation on GPU with 24GB 
+    workers_per_gpu=4,  # set to 2 for evaluation on GPU with 24GB 
     train=dict(
         type=dataset_type,
         ann_file=ann_file_train,
@@ -104,13 +112,13 @@ data = dict(
         pipeline=test_pipeline))
 # optimizer
 optimizer = dict(
-    type='SGD', lr=0.005, momentum=0.9,   # change from 0.01 to 0.005
-    weight_decay=0.0001)  # this lr is used for 8 gpus
+    type='SGD', lr=0.001, momentum=0.9,   # change from 0.01 to 0.001
+    weight_decay=0.0001, nesterov=True) 
 optimizer_config = dict(grad_clip=dict(max_norm=40, norm_type=2))
 # learning policy
-lr_config = dict(policy='step', step=[40, 80])
+lr_config = dict(policy='step', step=[20, 40])  # change from [40,80] to [20,40]
 total_epochs = 50 # change from 100 to 50
-checkpoint_config = dict(interval=5)
+checkpoint_config = dict(interval=10)
 evaluation = dict(
     interval=5, metrics=['top_k_accuracy', 'mean_class_accuracy'])
 log_config = dict(
@@ -119,10 +127,11 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook'),
     ])
+annealing_runner = True
 # runtime settings
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/i3d_r50_dense_32x2x1_100e_kinetics400_rgb/'
+work_dir = './work_dirs/finetune_ucf101_i3d_edlnokl/'
 load_from = 'https://download.openmmlab.com/mmaction/recognition/i3d/i3d_r50_dense_256p_32x2x1_100e_kinetics400_rgb/i3d_r50_dense_256p_32x2x1_100e_kinetics400_rgb_20200725-24eb54cc.pth'  # model path can be found in model zoo
 resume_from = None
 workflow = [('train', 1)]

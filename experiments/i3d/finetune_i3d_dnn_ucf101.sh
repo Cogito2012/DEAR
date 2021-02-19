@@ -5,8 +5,8 @@ cd ../../
 
 source activate mmaction
 
-CUDA_VISIBLE_DEVICES=$1 python tools/train.py configs/recognition/i3d/finetune_ucf101_i3d_bnn.py \
-	--work-dir work_dirs/i3d/finetune_ucf101_i3d_bnn \
+CUDA_VISIBLE_DEVICES=$1 python tools/train.py configs/recognition/i3d/finetune_ucf101_i3d_dnn.py \
+	--work-dir work_dirs/i3d/finetune_ucf101_i3d_dnn \
 	--validate \
 	--seed 0 \
 	--deterministic \

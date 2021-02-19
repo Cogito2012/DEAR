@@ -22,6 +22,8 @@ def parse_args():
         description='MMAction2 test (and eval) a model')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
+    parser.add_argument('--videos_per_gpu', type=int, default=2, help='the updated number of videos for each GPU')
+    parser.add_argument('--workers_per_gpu', type=int, default=2, help='the updated number of workers for each GPU')
     parser.add_argument(
         '--out',
         default=None,
@@ -144,11 +146,13 @@ def main():
         distributed = True
         init_dist(args.launcher, **cfg.dist_params)
 
+    videos_per_gpu = min(args.videos_per_gpu, cfg.data.get('videos_per_gpu', 1))
+    workers_per_gpu = min(args.workers_per_gpu, cfg.data.get('workers_per_gpu', 1))
     # build the dataloader
     dataset = build_dataset(cfg.data.test, dict(test_mode=True))
     dataloader_setting = dict(
-        videos_per_gpu=cfg.data.get('videos_per_gpu', 1),
-        workers_per_gpu=cfg.data.get('workers_per_gpu', 1),
+        videos_per_gpu=videos_per_gpu,
+        workers_per_gpu=workers_per_gpu,
         dist=distributed,
         shuffle=False,
         pin_memory=False)

@@ -12,16 +12,10 @@ model = dict(
         zero_init_residual=False),
     cls_head=dict(
         type='I3DHead',
-        loss_cls=dict(type='EvidenceLoss',
-                      num_classes=101,
-                      evidence='exp',
-                      loss_type='log',
-                      with_avuloss=True,
-                      annealing_method='exp'),
         num_classes=101,
         in_channels=2048,
         spatial_type='avg',
-        dropout_ratio=0,
+        dropout_ratio=0.5,
         init_std=0.01))
 # model training and testing settings
 train_cfg = None
@@ -110,11 +104,11 @@ data = dict(
         pipeline=test_pipeline))
 # optimizer
 optimizer = dict(
-    type='SGD', lr=0.005, momentum=0.9,   # change from 0.01 to 0.005
-    weight_decay=0.0001)  # this lr is used for 8 gpus
+    type='SGD', lr=0.001, momentum=0.9,   # change from 0.01 to 0.001
+    weight_decay=0.0001, nesterov=True)  # this lr is used for 8 gpus
 optimizer_config = dict(grad_clip=dict(max_norm=40, norm_type=2))
 # learning policy
-lr_config = dict(policy='step', step=[20, 40])  # change from [40,80] to [20,40]
+lr_config = dict(policy='step', step=[20, 40])
 total_epochs = 50 # change from 100 to 50
 checkpoint_config = dict(interval=10)
 evaluation = dict(
@@ -125,11 +119,10 @@ log_config = dict(
         dict(type='TextLoggerHook'),
         dict(type='TensorboardLoggerHook'),
     ])
-annealing_runner = True
 # runtime settings
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/i3d_r50_dense_32x2x1_100e_kinetics400_rgb/'
+work_dir = './work_dirs/finetune_ucf101_i3d_dnn/'
 load_from = 'https://download.openmmlab.com/mmaction/recognition/i3d/i3d_r50_dense_256p_32x2x1_100e_kinetics400_rgb/i3d_r50_dense_256p_32x2x1_100e_kinetics400_rgb_20200725-24eb54cc.pth'  # model path can be found in model zoo
-resume_from = None
+resume_from = './work_dirs/finetune_ucf101_i3d_r50_dense_32x2x1_100e_kinetics400_rgb/epoch_10.pth'
 workflow = [('train', 1)]
