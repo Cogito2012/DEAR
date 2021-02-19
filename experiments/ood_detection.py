@@ -65,7 +65,7 @@ def compute_uncertainty(predictions, method='BALD'):
 def run_stochastic_inference(model, data_loader, npass=10):
     # run inference
     model = MMDataParallel(model, device_ids=[0])
-    all_uncertainties, all_results, all_gts = [], [], []
+    all_confidences, all_uncertainties, all_results, all_gts = [], [], [], []
     prog_bar = mmcv.ProgressBar(len(data_loader.dataset))
     for i, data in enumerate(data_loader):
         all_scores = []
@@ -85,6 +85,8 @@ def run_stochastic_inference(model, data_loader, npass=10):
         mean_scores = np.mean(all_scores, axis=-1)
         preds = np.argmax(mean_scores, axis=1)
         all_results.append(preds)
+        conf = np.max(mean_scores, axis=1)
+        all_confidences.append(conf)
 
         labels = data['label'].numpy()
         all_gts.append(labels)
@@ -93,11 +95,12 @@ def run_stochastic_inference(model, data_loader, npass=10):
         batch_size = len(next(iter(data.values())))
         for _ in range(batch_size):
             prog_bar.update()
+    all_confidences = np.concatenate(all_confidences, axis=0)
     all_uncertainties = np.concatenate(all_uncertainties, axis=0)
     all_results = np.concatenate(all_results, axis=0)
     all_gts = np.concatenate(all_gts, axis=0)
 
-    return all_uncertainties, all_results, all_gts
+    return all_confidences, all_uncertainties, all_results, all_gts
 
 
 def run_evidence_inference(model, data_loader, evidence='exp'):
@@ -116,7 +119,7 @@ def run_evidence_inference(model, data_loader, evidence='exp'):
 
     # run inference
     model = MMDataParallel(model, device_ids=[0])
-    all_uncertainties, all_results, all_gts = [], [], []
+    all_confidences, all_uncertainties, all_results, all_gts = [], [], [], []
     prog_bar = mmcv.ProgressBar(len(data_loader.dataset))
     for i, data in enumerate(data_loader):
         with torch.no_grad():
@@ -129,6 +132,8 @@ def run_evidence_inference(model, data_loader, evidence='exp'):
         # compute the predictions and save labels
         preds = np.argmax(scores.numpy(), axis=1)
         all_results.append(preds)
+        conf = np.max(scores.numpy(), axis=1)
+        all_confidences.append(conf)
 
         labels = data['label'].numpy()
         all_gts.append(labels)
@@ -137,11 +142,12 @@ def run_evidence_inference(model, data_loader, evidence='exp'):
         batch_size = len(next(iter(data.values())))
         for _ in range(batch_size):
             prog_bar.update()
+    all_confidences = np.concatenate(all_confidences, axis=0)
     all_uncertainties = np.concatenate(all_uncertainties, axis=0)
     all_results = np.concatenate(all_results, axis=0)
     all_gts = np.concatenate(all_gts, axis=0)
 
-    return all_uncertainties, all_results, all_gts
+    return all_confidences, all_uncertainties, all_results, all_gts
 
 
 def run_inference(model, datalist_file, npass=10):
@@ -163,10 +169,10 @@ def run_inference(model, datalist_file, npass=10):
     data_loader = build_dataloader(dataset, **dataloader_setting)
 
     if not args.uncertainty == 'EDL':
-        all_uncertainties, all_results, all_gts = run_stochastic_inference(model, data_loader, npass)
+        all_confidences, all_uncertainties, all_results, all_gts = run_stochastic_inference(model, data_loader, npass)
     else:
-        all_uncertainties, all_results, all_gts = run_evidence_inference(model, data_loader, evidence)
-    return all_uncertainties, all_results, all_gts
+        all_confidences, all_uncertainties, all_results, all_gts = run_evidence_inference(model, data_loader, evidence)
+    return all_confidences, all_uncertainties, all_results, all_gts
 
 
 def main():
@@ -195,15 +201,18 @@ def main():
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
         # run inference (OOD)
-        ood_uncertainties, ood_results, ood_labels = run_inference(model, args.ood_data, npass=args.forward_pass)
+        ood_confidences, ood_uncertainties, ood_results, ood_labels = run_inference(model, args.ood_data, npass=args.forward_pass)
         # run inference (IND)
-        ind_uncertainties, ind_results, ind_labels = run_inference(model, args.ind_data, npass=args.forward_pass)
+        ind_confidences, ind_uncertainties, ind_results, ind_labels = run_inference(model, args.ind_data, npass=args.forward_pass)
         # save
-        np.savez(result_file[:-4], ind_unctt=ind_uncertainties, ood_unctt=ood_uncertainties, 
+        np.savez(result_file[:-4], ind_conf=ind_confidences, ood_conf=ood_confidences,
+                                   ind_unctt=ind_uncertainties, ood_unctt=ood_uncertainties, 
                                    ind_pred=ind_results, ood_pred=ood_results,
                                    ind_label=ind_labels, ood_label=ood_labels)
     else:
         results = np.load(result_file, allow_pickle=True)
+        ind_confidences = results['ind_conf']
+        ood_confidences = results['ood_conf']
         ind_uncertainties = results['ind_unctt']  # (N1,)
         ood_uncertainties = results['ood_unctt']  # (N2,)
         ind_results = results['ind_pred']  # (N1,)

@@ -52,7 +52,7 @@ case ${MODEL} in
     edl)
     # Evidential Deep Learning
     CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
-        --config configs/recognition/tpn/inference_tpn_slowonly_dnn.py \
+        --config configs/recognition/tpn/inference_tpn_slowonly_enn.py \
         --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss/latest.pth \
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
@@ -62,7 +62,7 @@ case ${MODEL} in
     edl_nokl)
     # Evidential Deep Learning
     CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
-        --config configs/recognition/tpn/inference_tpn_slowonly_dnn.py \
+        --config configs/recognition/tpn/inference_tpn_slowonly_enn.py \
         --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_nokl/latest.pth \
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
@@ -72,7 +72,7 @@ case ${MODEL} in
     edl_avuc)
     # Evidential Deep Learning with AvU Calibration
     CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
-        --config configs/recognition/tpn/inference_tpn_slowonly_dnn.py \
+        --config configs/recognition/tpn/inference_tpn_slowonly_enn.py \
         --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_avuc/latest.pth \
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
@@ -82,7 +82,7 @@ case ${MODEL} in
     edl_nokl_avuc)
     # Evidential Deep Learning (without KL divergence loss term) with AvU Calibration
     CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
-        --config configs/recognition/tpn/inference_tpn_slowonly_dnn.py \
+        --config configs/recognition/tpn/inference_tpn_slowonly_enn.py \
         --checkpoint work_dirs/tpn_slowonly/finetune_ucf101_tpn_slowonly_edlloss_nokl_avuc/latest.pth \
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
