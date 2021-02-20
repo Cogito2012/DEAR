@@ -11,7 +11,7 @@ def parse_args():
     '''
     parser = argparse.ArgumentParser(description='Compare the performance of openness')
     # model config
-    parser.add_argument('--base_model', default='i3d', choices=['i3d', 'tpn_slowonly'], help='the backbone model name')
+    parser.add_argument('--base_model', default='i3d', help='the backbone model name')
     parser.add_argument('--baselines', nargs='+', default=['I3D_Dropout_BALD', 'I3D_BNN_BALD', 'I3D_EDLlog_EDL', 'I3D_EDLlogAvUC_EDL'])
     parser.add_argument('--thresholds', nargs='+', type=float, default=[0.000423, 0.000024, 0.495783, 0.495783])
     parser.add_argument('--styles', nargs='+', default=['-b', '-k', '-r', '-g', '-m'])
