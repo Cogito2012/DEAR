@@ -124,5 +124,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/finetune_ucf101_i3d_dnn/'
 load_from = 'https://download.openmmlab.com/mmaction/recognition/i3d/i3d_r50_dense_256p_32x2x1_100e_kinetics400_rgb/i3d_r50_dense_256p_32x2x1_100e_kinetics400_rgb_20200725-24eb54cc.pth'  # model path can be found in model zoo
-resume_from = './work_dirs/finetune_ucf101_i3d_r50_dense_32x2x1_100e_kinetics400_rgb/epoch_10.pth'
+resume_from = None
 workflow = [('train', 1)]
