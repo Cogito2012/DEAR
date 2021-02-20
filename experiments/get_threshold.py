@@ -127,9 +127,9 @@ def run_inference():
 
     if not args.uncertainty == 'EDL':
         # use dropout in testing stage
-        if cfg.model.cls_head.type in ['I3DHead', 'TPNHead']:
+        if 'dnn' in args.config:
             model.apply(apply_dropout)
-        if cfg.model.cls_head.type in ['I3DBNNHead', 'TPNBNNHead']:
+        if 'bnn' in args.config:
             model.test_cfg.npass = 1
     # set cudnn benchmark
     torch.backends.cudnn.benchmark = True

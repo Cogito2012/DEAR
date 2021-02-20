@@ -1,17 +1,14 @@
 # model settings
 model = dict(
-    type='Recognizer3D',
+    type='Recognizer2D',
     backbone=dict(
-        type='ResNet3d',
-        pretrained2d=True,
+        type='ResNetTSM',
         pretrained='torchvision://resnet50',
         depth=50,
-        conv_cfg=dict(type='Conv3d'),
         norm_eval=False,
-        inflate=((1, 1, 1), (1, 0, 1, 0), (1, 0, 1, 0, 1, 0), (0, 1, 0)),
-        zero_init_residual=False),
+        shift_div=8),
     cls_head=dict(
-        type='I3DHead',
+        type='TSMHead',
         loss_cls=dict(type='EvidenceLoss',
                       num_classes=101,
                       evidence='exp',
@@ -20,8 +17,10 @@ model = dict(
         num_classes=101,
         in_channels=2048,
         spatial_type='avg',
+        consensus=dict(type='AvgConsensus', dim=1),
         dropout_ratio=0.5,
-        init_std=0.01))
+        init_std=0.001,
+        is_shift=True))
 # model training and testing settings
 evidence='exp'  # only used for EDL
 test_cfg = dict(average_clips='score')
@@ -32,16 +31,17 @@ img_norm_cfg = dict(
 test_pipeline = [
     dict(type='OpenCVInit', num_threads=1),
     dict(
-        type='SampleFrames',
-        clip_len=32,
-        frame_interval=2,
-        num_clips=1,
+        type='DenseSampleFrames',
+        clip_len=1,
+        frame_interval=1,
+        num_clips=8,
         test_mode=True),
     dict(type='OpenCVDecode'),
     dict(type='Resize', scale=(-1, 256)),
-    dict(type='ThreeCrop', crop_size=256),
+    dict(type='CenterCrop', crop_size=224),
+    dict(type='Flip', flip_ratio=0),
     dict(type='Normalize', **img_norm_cfg),
-    dict(type='FormatShape', input_format='NCTHW'),
+    dict(type='FormatShape', input_format='NCHW'),
     dict(type='Collect', keys=['imgs', 'label'], meta_keys=[]),
     dict(type='ToTensor', keys=['imgs'])
 ]
@@ -52,4 +52,5 @@ data = dict(
         type=dataset_type,
         ann_file=None,
         data_prefix=None,
+        start_index=0,
         pipeline=test_pipeline))
