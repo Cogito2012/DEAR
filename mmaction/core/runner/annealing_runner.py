@@ -17,6 +17,7 @@ class AnnealingRunner(EpochBasedRunner):
         if 'annealing' in kwargs:
             kwargs.update(epoch=self.epoch)
             kwargs.update(total_epoch=self.max_epochs)
+            kwargs.update(iter=self._iter)
         
         if self.batch_processor is not None:
             outputs = self.batch_processor(

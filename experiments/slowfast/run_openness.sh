@@ -25,7 +25,7 @@ esac
 python experiments/compare_openness.py \
     --base_model slowfast \
     --baselines SlowFast_DNN_BALD SlowFast_EDLNoKLAvUCDebias_EDL \
-    --thresholds ? ? \
+    --thresholds 0.000065 0.004552 \
     --styles b r \
     --ood_data ${OOD_DATA} \
     --ood_ncls ${NUM_CLASSES} \

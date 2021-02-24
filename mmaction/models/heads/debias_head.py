@@ -27,6 +27,7 @@ class DebiasHead(BaseHead):
                  in_channels,
                  loss_cls=dict(type='EvidenceLoss'),
                  loss_factor=0.1,
+                 hsic_factor=0.5,
                  bias_input=True,
                  bias_network=True,
                  dropout_ratio=0.5,
@@ -37,6 +38,7 @@ class DebiasHead(BaseHead):
         self.bias_network = bias_network
         assert bias_input or bias_network, "At least one of the choices (bias_input, bias_network) should be True!"
         self.loss_factor = loss_factor
+        self.hsic_factor = hsic_factor
         self.f1_conv3d = ConvModule(
             in_channels,
             in_channels * 2, (1, 3, 3),
@@ -114,7 +116,7 @@ class DebiasHead(BaseHead):
         kernel_XX = torch.exp(-gamma * X_L2)
         return kernel_XX
 
-    def hsic_loss(self, input1, input2, unbiased=False):
+    def hsic_loss(self, input1, input2, unbiased=True):
         N = len(input1)
         if N < 4:
             return torch.tensor(0.0).to(input1.device)
@@ -137,7 +139,8 @@ class DebiasHead(BaseHead):
                 + (torch.sum(tK) * torch.sum(tL) / (N - 1) / (N - 2))
                 - (2 * torch.sum(tK, 0).dot(torch.sum(tL, 0)) / (N - 2))
             )
-            loss = hsic / (N * (N - 3))
+            # loss = hsic / (N * (N - 3))
+            loss = hsic  # we remove the batch size (N) to enlarge the scale
         else:
             """Biased estimator of Hilbert-Schmidt Independence Criterion
             Gretton, Arthur, et al. "Measuring statistical dependence with Hilbert-Schmidt norms." 2005.
@@ -147,7 +150,7 @@ class DebiasHead(BaseHead):
             loss = torch.trace(KH @ LH / (N - 1) ** 2)
         return loss
 
-    def forward(self, x, num_segs=None, target=None):
+    def forward(self, x, num_segs=None, target=None, **kwargs):
         """Defines the computation performed at every call.
 
         Args:
@@ -167,30 +170,29 @@ class DebiasHead(BaseHead):
 
         # f1_Conv3D(x)
         x = self.f1_conv3d(feat)  # (B, 2048, 8, 7, 7)
-        x = self.avg_pool(x).squeeze(-1).squeeze(-1).squeeze(-1)
-        x = self.dropout(x)
+        feat_unbias = self.avg_pool(x).squeeze(-1).squeeze(-1).squeeze(-1)
+        x = self.dropout(feat_unbias)
         x = self.f1_fc(x)
         alpha_unbias = self.exp_evidence(x) + 1
         # minimize the edl losses
         loss_cls1 = self.edl_loss(torch.log, alpha_unbias, y)
         losses.update({'loss_unbias_cls': loss_cls1})
 
+        loss_hsic_f, loss_hsic_g = torch.zeros_like(loss_cls1), torch.zeros_like(loss_cls1)
         if self.bias_input:
             # f2_Conv3D(x)
             feat_shuffle = feat[:, :, torch.randperm(feat.size()[2])]
             x = self.f2_conv3d(feat_shuffle)  # (B, 2048, 8, 7, 7)
-            x = self.avg_pool(x).squeeze(-1).squeeze(-1).squeeze(-1)
-            x = self.dropout(x)
+            feat_bias1 = self.avg_pool(x).squeeze(-1).squeeze(-1).squeeze(-1)
+            x = self.dropout(feat_bias1)
             x = self.f2_fc(x)
             alpha_bias1 = self.exp_evidence(x) + 1
             # minimize the edl losses
             loss_cls2 = self.edl_loss(torch.log, alpha_bias1, y)
-            # # maximize the KL losses
-            # loss_kl1 = -1.0 * self.kl_divergence(alpha_unbias, alpha_bias1)
-            # losses.update({'loss_bias1_cls': loss_cls2, "loss_bias1_kld": loss_kl1})
-            # maximize HSIC 
-            loss_hsic1 = -1.0 * self.hsic_loss(alpha_unbias, alpha_bias1)
-            losses.update({'loss_bias1_cls': loss_cls2, "loss_bias1_hsic": loss_hsic1})
+            losses.update({'loss_bias1_cls': loss_cls2})
+            # minimize HSIC w.r.t. feat_unbias, and maximize HSIC w.r.t. feat_bias1
+            loss_hsic_f += self.hsic_factor * self.hsic_loss(feat_unbias, feat_bias1.detach()) 
+            loss_hsic_g += - self.hsic_factor * self.hsic_loss(feat_unbias.detach(), feat_bias1)
 
         if self.bias_network:
             # f3_Conv2D(x)
@@ -198,18 +200,22 @@ class DebiasHead(BaseHead):
             feat_reshape = feat.permute(0, 2, 1, 3, 4).contiguous().view(-1, C, H, W)  # (B*T, C, H, W)
             x = self.f3_conv2d(feat_reshape)  # (64, 2048, 7, 7)
             x = x.view(B, T, x.size(-3), x.size(-2), x.size(-1)).permute(0, 2, 1, 3, 4)  # (B, 2048, 8, 7, 7)
-            x = self.avg_pool(x).squeeze(-1).squeeze(-1).squeeze(-1)
-            x = self.dropout(x)
+            feat_bias2 = self.avg_pool(x).squeeze(-1).squeeze(-1).squeeze(-1)
+            x = self.dropout(feat_bias2)
             x = self.f3_fc(x)
             alpha_bias2 = self.exp_evidence(x) + 1
             # minimize the edl losses
             loss_cls3 = self.edl_loss(torch.log, alpha_bias2, y)
-            # # maximize the KL losses
-            # loss_kl2 = -1.0 * self.kl_divergence(alpha_unbias, alpha_bias2)
-            # losses.update({'loss_bias2_cls': loss_cls3, "loss_bias2_kld": loss_kl2})
-            # maximize HSIC 
-            loss_hsic2 = -1.0 * self.hsic_loss(alpha_unbias, alpha_bias2)
-            losses.update({'loss_bias2_cls': loss_cls3, "loss_bias2_hsic": loss_hsic2})
+            losses.update({'loss_bias2_cls': loss_cls3})
+            # minimize HSIC w.r.t. feat_unbias, and maximize HSIC w.r.t. feat_bias2
+            loss_hsic_f += self.hsic_factor * self.hsic_loss(feat_unbias, feat_bias2.detach()) 
+            loss_hsic_g += - self.hsic_factor * self.hsic_loss(feat_unbias.detach(), feat_bias2)
+        
+        # Here, we use odd iterations for minimizing hsic_f, and use even iterations for maximizing hsic_g
+        assert 'iter' in kwargs, "iter number is missing!"
+        loss_mask = kwargs['iter'] % 2
+        loss_hsic = loss_mask * loss_hsic_f + (1 - loss_mask) * loss_hsic_g
+        losses.update({'loss_hsic': loss_hsic})
         
         for k, v in losses.items():
             losses.update({k: v * self.loss_factor})

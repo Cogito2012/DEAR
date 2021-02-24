@@ -7,7 +7,7 @@ source activate mmaction
 
 # --validate
 CUDA_VISIBLE_DEVICES=$1 python tools/train.py configs/recognition/i3d/finetune_ucf101_i3d_edlnokl_avuc_debias.py \
-	--work-dir work_dirs/i3d/finetune_ucf101_i3d_edlnokl_avuc_debias \
+	--work-dir work_dirs/i3d/finetune_ucf101_i3d_edlnokl_avuc_ced \
 	--validate \
 	--seed 0 \
 	--deterministic \
