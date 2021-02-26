@@ -262,7 +262,7 @@ def run_inference(model, weibull_model, datalist_file):
         workers_per_gpu=cfg.data.get('workers_per_gpu', 1),
         dist=False,
         shuffle=False,
-        pin_memory=True)
+        pin_memory=False)
     dataloader_setting = dict(dataloader_setting, **cfg.data.get('test_dataloader', {}))
     data_loader = build_dataloader(dataset, **dataloader_setting)
 

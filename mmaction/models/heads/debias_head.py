@@ -27,7 +27,8 @@ class DebiasHead(BaseHead):
                  in_channels,
                  loss_cls=dict(type='EvidenceLoss'),
                  loss_factor=0.1,
-                 hsic_factor=0.5,
+                 hsic_factor=0.5,  # useful when alternative=True
+                 alternative=False,
                  bias_input=True,
                  bias_network=True,
                  dropout_ratio=0.5,
@@ -39,6 +40,7 @@ class DebiasHead(BaseHead):
         assert bias_input or bias_network, "At least one of the choices (bias_input, bias_network) should be True!"
         self.loss_factor = loss_factor
         self.hsic_factor = hsic_factor
+        self.alternative = alternative
         self.f1_conv3d = ConvModule(
             in_channels,
             in_channels * 2, (1, 3, 3),
@@ -116,7 +118,7 @@ class DebiasHead(BaseHead):
         kernel_XX = torch.exp(-gamma * X_L2)
         return kernel_XX
 
-    def hsic_loss(self, input1, input2, unbiased=True):
+    def hsic_loss(self, input1, input2, unbiased=False):
         N = len(input1)
         if N < 4:
             return torch.tensor(0.0).to(input1.device)
@@ -139,8 +141,7 @@ class DebiasHead(BaseHead):
                 + (torch.sum(tK) * torch.sum(tL) / (N - 1) / (N - 2))
                 - (2 * torch.sum(tK, 0).dot(torch.sum(tL, 0)) / (N - 2))
             )
-            # loss = hsic / (N * (N - 3))
-            loss = hsic  # we remove the batch size (N) to enlarge the scale
+            loss = hsic if self.alternative else hsic / (N * (N - 3))
         else:
             """Biased estimator of Hilbert-Schmidt Independence Criterion
             Gretton, Arthur, et al. "Measuring statistical dependence with Hilbert-Schmidt norms." 2005.
@@ -190,9 +191,14 @@ class DebiasHead(BaseHead):
             # minimize the edl losses
             loss_cls2 = self.edl_loss(torch.log, alpha_bias1, y)
             losses.update({'loss_bias1_cls': loss_cls2})
-            # minimize HSIC w.r.t. feat_unbias, and maximize HSIC w.r.t. feat_bias1
-            loss_hsic_f += self.hsic_factor * self.hsic_loss(feat_unbias, feat_bias1.detach()) 
-            loss_hsic_g += - self.hsic_factor * self.hsic_loss(feat_unbias.detach(), feat_bias1)
+            if self.alternative:
+                # minimize HSIC w.r.t. feat_unbias, and maximize HSIC w.r.t. feat_bias1
+                loss_hsic_f += self.hsic_factor * self.hsic_loss(feat_unbias, feat_bias1.detach(), unbiased=True) 
+                loss_hsic_g += - self.hsic_factor * self.hsic_loss(feat_unbias.detach(), feat_bias1, unbiased=True)
+            else:
+                # maximize HSIC 
+                loss_hsic1 = -1.0 * self.hsic_loss(alpha_unbias, alpha_bias1)
+                losses.update({"loss_bias1_hsic": loss_hsic1})
 
         if self.bias_network:
             # f3_Conv2D(x)
@@ -207,16 +213,22 @@ class DebiasHead(BaseHead):
             # minimize the edl losses
             loss_cls3 = self.edl_loss(torch.log, alpha_bias2, y)
             losses.update({'loss_bias2_cls': loss_cls3})
-            # minimize HSIC w.r.t. feat_unbias, and maximize HSIC w.r.t. feat_bias2
-            loss_hsic_f += self.hsic_factor * self.hsic_loss(feat_unbias, feat_bias2.detach()) 
-            loss_hsic_g += - self.hsic_factor * self.hsic_loss(feat_unbias.detach(), feat_bias2)
+            if self.alternative:
+                # minimize HSIC w.r.t. feat_unbias, and maximize HSIC w.r.t. feat_bias2
+                loss_hsic_f += self.hsic_factor * self.hsic_loss(feat_unbias, feat_bias2.detach(), unbiased=True)
+                loss_hsic_g += - self.hsic_factor * self.hsic_loss(feat_unbias.detach(), feat_bias2, unbiased=True)
+            else:
+                # maximize HSIC 
+                loss_hsic2 = -1.0 * self.hsic_loss(alpha_unbias, alpha_bias2)
+                losses.update({"loss_bias2_hsic": loss_hsic2})
         
-        # Here, we use odd iterations for minimizing hsic_f, and use even iterations for maximizing hsic_g
-        assert 'iter' in kwargs, "iter number is missing!"
-        loss_mask = kwargs['iter'] % 2
-        loss_hsic = loss_mask * loss_hsic_f + (1 - loss_mask) * loss_hsic_g
-        losses.update({'loss_hsic': loss_hsic})
-        
+        if self.alternative:
+            # Here, we use odd iterations for minimizing hsic_f, and use even iterations for maximizing hsic_g
+            assert 'iter' in kwargs, "iter number is missing!"
+            loss_mask = kwargs['iter'] % 2
+            loss_hsic = loss_mask * loss_hsic_f + (1 - loss_mask) * loss_hsic_g
+            losses.update({'loss_hsic': loss_hsic})
+            
         for k, v in losses.items():
             losses.update({k: v * self.loss_factor})
         return losses

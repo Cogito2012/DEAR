@@ -26,9 +26,9 @@ if __name__ == '__main__':
     TPN_DEAR_MiT = [96.42, 81.80]
     # SlowFast
     SlowFast_DNN_HMDB = [96.72, 75.41]
-    SlowFast_DNN_MiT = []
+    SlowFast_DNN_MiT = [96.72, 78.49]
     SlowFast_DEAR_HMDB = [96.66, 82.94]
-    SlowFast_DEAR_MiT = []
+    SlowFast_DEAR_MiT = [96.66, 86.99]
 
     # Line: DNN for HMDB
     plt.plot([I3D_DNN_HMDB[0], TSM_DNN_HMDB[0], TPN_DNN_HMDB[0], SlowFast_DNN_HMDB[0]],
@@ -37,11 +37,11 @@ if __name__ == '__main__':
     plt.plot([I3D_DEAR_HMDB[0], TSM_DEAR_HMDB[0], TPN_DEAR_HMDB[0], SlowFast_DEAR_HMDB[0]],
              [I3D_DEAR_HMDB[1], TSM_DEAR_HMDB[1], TPN_DEAR_HMDB[1], SlowFast_DEAR_HMDB[1]], 'r-', linewidth=2)
     # Line: DNN for MiT
-    plt.plot([I3D_DNN_MiT[0], TSM_DNN_MiT[0], TPN_DNN_MiT[0]],
-             [I3D_DNN_MiT[1], TSM_DNN_MiT[1], TPN_DNN_MiT[1]], 'b-', linewidth=2, label='MiT')
+    plt.plot([I3D_DNN_MiT[0], TSM_DNN_MiT[0], TPN_DNN_MiT[0], SlowFast_DNN_MiT[0]],
+             [I3D_DNN_MiT[1], TSM_DNN_MiT[1], TPN_DNN_MiT[1], SlowFast_DNN_MiT[1]], 'b-', linewidth=2, label='MiT')
     # Line: DEAR for MiT
-    plt.plot([I3D_DEAR_MiT[0], TSM_DEAR_MiT[0], TPN_DEAR_MiT[0]],
-             [I3D_DEAR_MiT[1], TSM_DEAR_MiT[1], TPN_DEAR_MiT[1]], 'b-', linewidth=2)
+    plt.plot([I3D_DEAR_MiT[0], TSM_DEAR_MiT[0], TPN_DEAR_MiT[0], SlowFast_DEAR_MiT[0]],
+             [I3D_DEAR_MiT[1], TSM_DEAR_MiT[1], TPN_DEAR_MiT[1], SlowFast_DEAR_MiT[1]], 'b-', linewidth=2)
     
 
     # Draw all I3D points
@@ -96,9 +96,15 @@ if __name__ == '__main__':
     plt.scatter(SlowFast_DEAR_HMDB[0], SlowFast_DEAR_HMDB[1], marker='*', s=markersize, color='r')
     plt.text(SlowFast_DEAR_HMDB[0], SlowFast_DEAR_HMDB[1], 'SlowFast', fontsize=fontsize)
     plt.plot([SlowFast_DNN_HMDB[0], SlowFast_DEAR_HMDB[0]], [SlowFast_DNN_HMDB[1], SlowFast_DEAR_HMDB[1]], 'r--', linewidth=0.5)
+    # MiT
+    plt.scatter(SlowFast_DNN_MiT[0], SlowFast_DNN_MiT[1], marker='^', s=markersize, color='b')
+    plt.text(SlowFast_DNN_MiT[0], SlowFast_DNN_MiT[1], 'SlowFast', fontsize=fontsize)
+    plt.scatter(SlowFast_DEAR_MiT[0], SlowFast_DEAR_MiT[1], marker='*', s=markersize, color='b')
+    plt.text(SlowFast_DEAR_MiT[0], SlowFast_DEAR_MiT[1], 'SlowFast', fontsize=fontsize)
+    plt.plot([SlowFast_DNN_MiT[0], SlowFast_DEAR_MiT[0]], [SlowFast_DNN_MiT[1], SlowFast_DEAR_MiT[1]], 'b--', linewidth=0.5)
     
     plt.xlim(94, 97.5)
-    plt.ylim(65, 85)
+    plt.ylim(65, 90)
     plt.xlabel('Closed-Set Accuracy (%)', fontsize=fontsize)
     plt.ylabel('Open-Set AUC Score (%)', fontsize=fontsize)
     plt.xticks(fontsize=fontsize)

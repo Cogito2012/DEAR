@@ -83,6 +83,10 @@ def main():
         plt.plot(openness_list, macro_F1_list, style, linewidth=2)
         # plt.fill_between(openness_list, macro_F1_list - std_list, macro_F1_list + std_list, style)
 
+        w_openness = np.array(openness_list) / 100.
+        open_maF1 = np.sum(w_openness * macro_F1_list) / np.sum(w_openness)
+        print('Open macro-F1 score: %.3f'%(open_maF1 * 100))
+
     plt.ylim(0.5, 1.0)
     plt.xlabel('Openness (%)')
     plt.ylabel('macro F1')
