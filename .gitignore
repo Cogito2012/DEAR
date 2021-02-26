@@ -127,6 +127,7 @@ temp/
 *.pkl
 experiments/*/results
 experiments/*/logs
+experiments/libMR*
 *backup*
 tools/data/mit/log*
 tools/data/*log*

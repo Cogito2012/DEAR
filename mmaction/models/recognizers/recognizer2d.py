@@ -104,7 +104,7 @@ class Recognizer2D(BaseRecognizer):
         utils."""
         return self._do_test(imgs)
 
-    def get_feat(self, imgs):
+    def get_feat(self, imgs, return_score=False):
         """Defines the computation performed at every call when using get_feat
         utils."""
         batches = imgs.shape[0]
@@ -114,4 +114,11 @@ class Recognizer2D(BaseRecognizer):
         x = self.extract_feat(imgs)
         if hasattr(self, 'neck'):
             x, _ = self.neck(x)
+        
+        if return_score:
+            cls_score = self.cls_head(x, num_segs)
+            assert cls_score.size()[0] % batches == 0
+            cls_score = self.average_clip(cls_score,
+                                      cls_score.size()[0] // batches)
+            return x, cls_score
         return x

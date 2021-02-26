@@ -70,7 +70,7 @@ class Recognizer3D(BaseRecognizer):
         utils."""
         return self._do_test(imgs)
 
-    def get_feat(self, imgs):
+    def get_feat(self, imgs, return_score=False):
         """Defines the computation performed at every call when using get_feat
         utils."""
         num_segs = imgs.shape[1]
@@ -79,4 +79,9 @@ class Recognizer3D(BaseRecognizer):
         x = self.extract_feat(imgs)
         if hasattr(self, 'neck'):
             x, _ = self.neck(x)  # (num_clips * num_crops, 2048, 1, 8, 8)
+        
+        if return_score:
+            cls_score = self.cls_head(x)
+            cls_score = self.average_clip(cls_score, num_segs)
+            return x, cls_score
         return x
