@@ -16,6 +16,8 @@ except ImportError:
     print("LibMR not installed or libmr.so not found")
     print("Install libmr: cd libMR/; ./compile.sh")
     sys.exit()
+from sklearn.metrics import f1_score, roc_auc_score, accuracy_score
+import matplotlib.pyplot as plt
 
 
 def set_deterministic(seed):
@@ -42,6 +44,8 @@ def parse_args():
     # test data config
     parser.add_argument('--ind_data', help='the split file of in-distribution testing data')
     parser.add_argument('--ood_data', help='the split file of out-of-distribution testing data')
+    parser.add_argument('--ood_ncls', type=int, help='the number of classes in unknwon dataset')
+    parser.add_argument('--num_rand', type=int, default=10, help='the number of random selection for ood classes')
     # device
     parser.add_argument('--device', type=str, default='cuda:0', help='CPU/CUDA device option')
     parser.add_argument('--result_prefix', help='result file prefix')
@@ -205,7 +209,7 @@ def compute_openmax_prob(openmax_score, openmax_score_u):
     unknowns = np.mean(prob_unknowns, axis=0)
     modified_scores =  scores.tolist() + [unknowns]
     assert len(modified_scores) == num_cls + 1
-    modified_scores = np.array(modified_scores)
+    modified_scores = np.expand_dims(np.array(modified_scores), axis=0)
     return modified_scores
 
 
@@ -252,7 +256,7 @@ def run_inference(model, weibull_model, datalist_file):
     cfg.data.test.data_prefix = os.path.join(os.path.dirname(datalist_file), 'videos')
     cfg.test_cfg.average_clips = 'score'  # we only need scores before softmax layer
     model.cfg.data.videos_per_gpu = 1
-    model.cfg.data.workers_per_gpu = 2
+    model.cfg.data.workers_per_gpu = 0
     num_cls = model.cls_head.num_classes
 
     # build the dataloader
@@ -295,6 +299,58 @@ def run_inference(model, weibull_model, datalist_file):
     all_gts = np.concatenate(all_gts, axis=0)
 
     return all_openmax, all_softmax, all_gts
+
+
+def evaluate_openmax(ind_openmax, ood_openmax, ind_labels, ood_labels, ood_ncls, num_rand=10):
+    ind_ncls = model.cls_head.num_classes
+    ind_results = np.argmax(ind_openmax, axis=1)
+    ood_results = np.argmax(ood_openmax, axis=1)
+
+    # close-set accuracy (multi-class)
+    acc = accuracy_score(ind_labels, ind_results)
+
+    # open-set auc-roc (binary class)
+    preds = np.concatenate((ind_results, ood_results), axis=0)
+    preds[preds == ind_ncls] = 1  # unknown class
+    preds[preds != ind_ncls] = 0  # known class
+    labels = np.concatenate((np.zeros_like(ind_labels), np.ones_like(ood_labels)))
+    auc = roc_auc_score(labels, preds)
+    print('OpenMax: ClosedSet Accuracy (multi-class): %.3lf, OpenSet AUC (bin-class): %.3lf'%(acc * 100, auc * 100))
+
+    # open set F1 score (multi-class)
+    macro_F1_list = [f1_score(ind_labels, ind_results, average='macro')]
+    std_list = [0]
+    openness_list = [0]
+    for n in range(ood_ncls):
+        ncls_novel = n + 1
+        openness = (1 - np.sqrt((2 * ind_ncls) / (2 * ind_ncls + ncls_novel))) * 100
+        openness_list.append(openness)
+        # randoml select the subset of ood samples
+        macro_F1_multi = np.zeros((num_rand), dtype=np.float32)
+        for m in range(num_rand):
+            cls_select = np.random.choice(ood_ncls, ncls_novel, replace=False) 
+            ood_sub_results = np.concatenate([ood_results[ood_labels == clsid] for clsid in cls_select])
+            ood_sub_labels = np.ones_like(ood_sub_results) * ind_ncls
+            # construct preds and labels
+            preds = np.concatenate((ind_results, ood_sub_results), axis=0)
+            labels = np.concatenate((ind_labels, ood_sub_labels), axis=0)
+            macro_F1_multi[m] = f1_score(labels, preds, average='macro')
+        macro_F1 = np.mean(macro_F1_multi)
+        std = np.std(macro_F1_multi)
+        macro_F1_list.append(macro_F1)
+        std_list.append(std)
+
+    # draw comparison curves
+    macro_F1_list = np.array(macro_F1_list)
+    std_list = np.array(std_list)
+
+    w_openness = np.array(openness_list) / 100.
+    open_maF1_mean = np.sum(w_openness * macro_F1_list) / np.sum(w_openness)
+    open_maF1_std = np.sum(w_openness * std_list) / np.sum(w_openness)
+    print('Open macro-F1 score: %.3f, std=%.3lf'%(open_maF1_mean * 100, open_maF1_std * 100))
+
+    return openness_list, macro_F1_list, std_list
+
 
 
 if __name__ == '__main__':
@@ -345,3 +401,19 @@ if __name__ == '__main__':
         ood_labels = results['ood_label']  # (N2,)
 
     ######## Evaluation ########
+    openness_list, macro_F1_list, std_list = evaluate_openmax(ind_openmax, ood_openmax, ind_labels, ood_labels, args.ood_ncls, num_rand=args.num_rand)
+    
+    # draw F1 curve
+    plt.figure(figsize=(8,5))  # (w, h)
+    plt.plot(openness_list, macro_F1_list, 'r-', linewidth=2)
+    plt.fill_between(openness_list, macro_F1_list - std_list, macro_F1_list + std_list, 'c')
+    plt.ylim(0.5, 1.0)
+    plt.xlabel('Openness (%)')
+    plt.ylabel('macro F1')
+    plt.grid('on')
+    plt.legend('OpenMax')
+    plt.tight_layout()
+    dataset_name = args.result_prefix.split('_')[-1]
+    png_file = os.path.join(os.path.dirname(args.result_prefix), 'F1_openness_%s.png'%(dataset_name))
+    plt.savefig(png_file)
+    print('Openness curve figure is saved in: %s'%(png_file))
