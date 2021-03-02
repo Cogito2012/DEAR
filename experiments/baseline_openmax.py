@@ -66,10 +66,27 @@ def get_datalist(split_file):
     return filelist, labels
 
 def spatial_temporal_pooling(feat_blob):
-    # spatial average pooling 
-    kernel_size = (feat_blob.size(-3), feat_blob.size(-2), feat_blob.size(-1))
-    avg_pool3d = torch.nn.AvgPool3d(kernel_size, stride=1, padding=0)
-    feat_clips = avg_pool3d(feat_blob).view(feat_blob.size(0), feat_blob.size(1))  # (c, D)
+    if isinstance(feat_blob, tuple):  # slowfast model returns a tuple of features
+        assert len(feat_blob) == 2, "invalid feature tuple!"
+        avg_pool3d = torch.nn.AdaptiveAvgPool3d((1, 1, 1))
+        x_fast, x_slow = feat_blob
+        x_fast = avg_pool3d(x_fast)
+        x_slow = avg_pool3d(x_slow)
+        # [N, channel_fast + channel_slow, 1, 1, 1]
+        feat_clips = torch.cat((x_slow, x_fast), dim=1).squeeze(-1).squeeze(-1).squeeze(-1)
+    else:
+        if len(feat_blob.size()) == 5:  # 3D Network
+            # spatial temporal average pooling 
+            kernel_size = (feat_blob.size(-3), feat_blob.size(-2), feat_blob.size(-1))
+            avg_pool3d = torch.nn.AvgPool3d(kernel_size, stride=1, padding=0)
+            feat_clips = avg_pool3d(feat_blob).view(feat_blob.size(0), feat_blob.size(1))  # (c, D)
+        elif len(feat_blob.size()) == 4:  # 2D Network
+            # spatial temporal average pooling 
+            kernel_size = (feat_blob.size(-2), feat_blob.size(-1))
+            avg_pool2d = torch.nn.AvgPool2d(kernel_size, stride=1, padding=0)
+            feat_clips = avg_pool2d(feat_blob).view(feat_blob.size(0), feat_blob.size(1))  # (c, D)
+        else:
+            print('Unsupported feature dimension: {}'.format(feat_blob.size()))
     # get the mean features of all clips and crops
     feat_final = torch.mean(feat_clips, dim=0, keepdim=True)  # (c=1, D)
     return feat_final
@@ -312,7 +329,7 @@ def evaluate_openmax(ind_openmax, ood_openmax, ind_labels, ood_labels, ood_ncls,
     # open-set auc-roc (binary class)
     preds = np.concatenate((ind_results, ood_results), axis=0)
     preds[preds == ind_ncls] = 1  # unknown class
-    preds[preds != ind_ncls] = 0  # known class
+    preds[preds != 1] = 0  # known class
     labels = np.concatenate((np.zeros_like(ind_labels), np.ones_like(ood_labels)))
     auc = roc_auc_score(labels, preds)
     print('OpenMax: ClosedSet Accuracy (multi-class): %.3lf, OpenSet AUC (bin-class): %.3lf'%(acc * 100, auc * 100))
@@ -406,7 +423,7 @@ if __name__ == '__main__':
     # draw F1 curve
     plt.figure(figsize=(8,5))  # (w, h)
     plt.plot(openness_list, macro_F1_list, 'r-', linewidth=2)
-    plt.fill_between(openness_list, macro_F1_list - std_list, macro_F1_list + std_list, 'c')
+    # plt.fill_between(openness_list, macro_F1_list - std_list, macro_F1_list + std_list, 'c')
     plt.ylim(0.5, 1.0)
     plt.xlabel('Openness (%)')
     plt.ylabel('macro F1')
