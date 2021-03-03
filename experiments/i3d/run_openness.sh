@@ -24,9 +24,9 @@ esac
 # OOD Detection comparison
 python experiments/compare_openness.py \
     --base_model i3d \
-    --baselines I3D_DNN_BALD I3D_BNN_BALD I3D_EDLNoKL_EDL I3D_EDLNoKLAvUCDebias_EDL I3D_EDLNoKLAvUCCED_EDL \
+    --baselines I3D_DNN_BALD I3D_BNN_BALD I3D_EDLNoKL_EDL I3D_EDLNoKLAvUCCED_EDL I3D_EDLNoKLAvUCDebias_EDL \
     --thresholds 0.000433 0.000004 0.004547 0.004550 0.004550 \
-    --styles b k y r c\
+    --styles b k y c r\
     --ood_data ${OOD_DATA} \
     --ood_ncls ${NUM_CLASSES} \
     --ind_ncls 101 \
