@@ -28,6 +28,8 @@ def main():
 
     result_path = os.path.join('./experiments', args.base_model, 'results')
     plt.figure(figsize=(8,5))  # (w, h)
+    plt.rcParams["font.family"] = "Arial"  # Times New Roman
+    fontsize = 15
     for style, thresh, baseline in zip(args.styles, args.thresholds, args.baselines):
         result_file = os.path.join(result_path, baseline + '_%s'%(args.ood_data) + '_result.npz')
         assert os.path.exists(result_file), "File not found! Run ood_detection first!"
@@ -80,7 +82,7 @@ def main():
         # draw comparison curves
         macro_F1_list = np.array(macro_F1_list)
         std_list = np.array(std_list)
-        plt.plot(openness_list, macro_F1_list, style, linewidth=2)
+        plt.plot(openness_list, macro_F1_list * 100, style, linewidth=2)
         # plt.fill_between(openness_list, macro_F1_list - std_list, macro_F1_list + std_list, style)
 
         w_openness = np.array(openness_list) / 100.
@@ -88,14 +90,19 @@ def main():
         open_maF1_std = np.sum(w_openness * std_list) / np.sum(w_openness)
         print('Open macro-F1 score: %.3f, std=%.3lf'%(open_maF1_mean * 100, open_maF1_std * 100))
 
-    plt.ylim(0.5, 1.0)
-    plt.xlabel('Openness (%)')
-    plt.ylabel('macro F1')
+    plt.xlim(0, max(openness_list))
+    plt.ylim(60, 80)
+    plt.xlabel('Openness (%)', fontsize=fontsize)
+    plt.ylabel('macro F1 (%)', fontsize=fontsize)
     plt.grid('on')
-    plt.legend(args.baselines)
+    # plt.legend(args.baselines)
+    plt.legend(['MC Dropout BALD', 'BNN SVI BALD', 'DEAR (vanilla)', 'DEAR (alter)', 'DEAR (joint)'], loc='lower left', fontsize=fontsize)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
     plt.tight_layout()
     png_file = os.path.join(result_path, args.result_png)
     plt.savefig(png_file)
+    plt.savefig(png_file[:-4] + '.pdf')
     print('Openness curve figure is saved in: %s'%(png_file))
 
 
