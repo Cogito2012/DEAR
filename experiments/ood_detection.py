@@ -12,6 +12,7 @@ from mmcv.parallel import MMDataParallel
 import numpy as np
 from scipy.special import xlogy
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from tqdm import tqdm
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
@@ -220,17 +221,34 @@ def main():
         ind_labels = results['ind_label']
         ood_labels = results['ood_label']
     # visualize
+    ind_uncertainties = np.array(ind_uncertainties)
+    ind_uncertainties = (ind_uncertainties-np.min(ind_uncertainties)) / (np.max(ind_uncertainties) - np.min(ind_uncertainties)) # normalize
+    ood_uncertainties = np.array(ood_uncertainties)
+    ood_uncertainties = (ood_uncertainties-np.min(ood_uncertainties)) / (np.max(ood_uncertainties) - np.min(ood_uncertainties)) # normalize
     dataName_ind = args.ind_data.split('/')[-2].upper()
     dataName_ood = args.ood_data.split('/')[-2].upper()
+    if dataName_ind == 'UCF101':
+        dataName_ind = 'UCF-101'
+    if dataName_ood == 'MIT':
+        dataName_ood = 'MiT-v2'
+    if dataName_ood == 'HMDB51':
+        dataName_ood = 'HMDB-51'
     plt.figure(figsize=(5,4))  # (w, h)
+    plt.rcParams["font.family"] = "Arial"  # Times New Roman
+    fontsize = 15
     plt.hist([ind_uncertainties, ood_uncertainties], 50, 
             density=True, histtype='bar', color=['blue', 'red'], 
             label=['in-distribution (%s)'%(dataName_ind), 'out-of-distribution (%s)'%(dataName_ood)])
-    plt.legend(prop={'size': 10})
-    plt.xlabel('%s Uncertainty'%(args.uncertainty))
-    plt.ylabel('density')
+    plt.legend(fontsize=fontsize)
+    plt.xlabel('%s uncertainty'%(args.uncertainty), fontsize=fontsize)
+    plt.ylabel('density', fontsize=fontsize)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+    plt.xlim(0, 1.01)
+    plt.ylim(0, 40.01)
     plt.tight_layout()
     plt.savefig(os.path.join(args.result_prefix + '_distribution.png'))
+    plt.savefig(os.path.join(args.result_prefix + '_distribution.pdf'))
 
 if __name__ == '__main__':
 

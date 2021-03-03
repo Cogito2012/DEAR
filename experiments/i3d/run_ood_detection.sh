@@ -63,11 +63,11 @@ case ${MODEL} in
     # Evidential Deep Learning (without KL divergence loss term) with AvU Calibration and Debiasing
     CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
         --config configs/recognition/i3d/inference_i3d_enn.py \
-        --checkpoint work_dirs/i3d/finetune_ucf101_i3d_edlnokl_avuc_debias/latest.pth \
+        --checkpoint work_dirs/i3d/finetune_ucf101_i3d_edlnokl_avuc_ced/latest.pth \
         --ind_data ${IND_DATA} \
         --ood_data ${OOD_DATA} \
         --uncertainty EDL \
-        --result_prefix ${RESULT_DIR}/I3D_EDLNoKLAvUCDebias_EDL_${OOD_DATASET}
+        --result_prefix ${RESULT_DIR}/I3D_EDLNoKLAvUCCED_EDL_${OOD_DATASET}
     ;;
     *)
     echo "Invalid model: "${MODEL}
