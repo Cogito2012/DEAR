@@ -7,10 +7,6 @@ def eval_calibration(predictions, confidences, labels, M=15):
     """
     M: number of bins for confidence scores
     """
-    # confidences = (confidences - np.min(confidences)) / (np.max(confidences) - np.min(confidences) + 1e-6)
-    # confidences = confidences / np.max(confidences)
-    # confidences = np.exp(confidences)
-    # confidences /= np.sum(confidences)
     num_Bm = np.zeros((M,), dtype=np.int32)
     accs = np.zeros((M,), dtype=np.float32)
     confs = np.zeros((M,), dtype=np.float32)
@@ -45,43 +41,52 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MMAction2 test')
     # model config
     parser.add_argument('--ood_result', help='the result file of ood detection')
-    parser.add_argument('--M', type=int, default=10, help='The number of bins')
-    parser.add_argument('--save_file', help='the image file path of generated calibration figure')
+    parser.add_argument('--M', type=int, default=15, help='The number of bins')
+    parser.add_argument('--save_prefix', help='the image file path of generated calibration figure')
     args = parser.parse_args()
 
     results = np.load(args.ood_result, allow_pickle=True)
-    ind_confidences = results['ind_conf']
-    ood_confidences = results['ood_conf']
     ind_uncertainties = results['ind_unctt']  # (N1,)
     ood_uncertainties = results['ood_unctt']  # (N2,)
     ind_results = results['ind_pred']  # (N1,)
     ood_results = results['ood_pred']  # (N2,)
     ind_labels = results['ind_label']
     ood_labels = results['ood_label']
+    if 'ind_conf' not in results:
+        ind_confidences = 1 - ind_uncertainties
+        ood_confidences = 1 - ood_uncertainties
+    else:
+        ind_confidences = results['ind_conf']
+        ood_confidences = results['ood_conf']
 
     # result path
-    result_path = os.path.dirname(args.save_file)
+    result_path = os.path.dirname(args.save_prefix)
     if not os.path.exists(result_path):
         os.makedirs(result_path)
 
-    # evaluation on in-distribution data
-    accs, confs, num_Bm, conf_intervals = eval_calibration(ind_results, ind_confidences, ind_labels, M=args.M)
+    accs, confs, num_Bm, conf_intervals = eval_calibration(ind_results, 1-ind_uncertainties, ind_labels, M=args.M)
 
     # compute Expected Calibration Error (ECE)
     ece = np.sum(np.abs(accs - confs) * num_Bm / np.sum(num_Bm))
-    print('The ECE result: %.3lf'%(ece))
+    print('The IND ECE result: %.3lf'%(ece))
 
     # plot the ECE figure
-    fig, ax = plt.subplots(figsize=(5,5))
+    fig, ax = plt.subplots(figsize=(4,4))
+    plt.rcParams["font.family"] = "Arial"  # Times New Roman
+    fontsize = 15
     plt.bar(conf_intervals, accs, width=1/args.M, linewidth=1, edgecolor='k', align='edge', label='Outputs')
     plt.bar(conf_intervals, np.maximum(0, conf_intervals - accs), bottom=accs, color='y', width=1/args.M, linewidth=1, edgecolor='k', align='edge', label='Gap')
-    plt.text(0.75, 0.1, 'ECE=%.4f'%(ece), backgroundcolor='y')
+    plt.text(0.1, 0.6, 'ECE=%.4f'%(ece), fontsize=fontsize)
     add_identity(ax, color='r', ls='--')
     plt.xlim(0, 1)
     plt.ylim(0, 1)
-    plt.xlabel('confidence')
-    plt.ylabel('accuracy')
-    plt.legend()
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+    plt.xlabel('confidence', fontsize=fontsize)
+    plt.ylabel('accuracy', fontsize=fontsize)
+    plt.legend(fontsize=fontsize)
+    ax.set_aspect('equal', 'box')
     plt.tight_layout()
-    plt.savefig(args.save_file)
+    plt.savefig(args.save_prefix + '_ind.png')
+    plt.savefig(args.save_prefix + '_ind.pdf')
 
