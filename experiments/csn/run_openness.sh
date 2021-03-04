@@ -25,7 +25,7 @@ esac
 python experiments/compare_openness.py \
     --base_model csn \
     --baselines CSN_DNN_BALD CSN_EDLNoKLAvUCDebias_EDL \
-    --thresholds ? ? \
+    --thresholds 0.000089 ? \
     --styles b r \
     --ood_data ${OOD_DATA} \
     --ood_ncls ${NUM_CLASSES} \
