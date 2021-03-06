@@ -38,6 +38,23 @@ def confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
         confmat = np.nan_to_num(confmat)
     return confmat
 
+
+def plot_confmat(confmat, know_ood_labels=False):
+    plt.figure(figsize=(4,4))
+    plt.rcParams["font.family"] = "Arial"  # Times New Roman
+    fontsize = 15
+    plt.imshow(confmat, cmap='hot')
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+    # cbar = plt.colorbar()
+    # cbar.ax.tick_params(labelsize=fontsize)
+    plt.tight_layout()
+    if know_ood_labels:
+        args.save_file = args.save_file[:-4] + '_knownOOD.png'
+    plt.savefig(args.save_file)
+    plt.savefig(args.save_file[:-4] + '.pdf')
+    plt.close()
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MMAction2 test')
     # model config
@@ -63,41 +80,10 @@ if __name__ == '__main__':
     confmat = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
                                 ood_labels, ood_results, ood_uncertainties,
                                 args.uncertain_thresh, know_ood_labels=False)
-    plt.figure()
-    plt.imshow(confmat, cmap='hot')
-    plt.colorbar()
-    plt.tight_layout()
-    plt.savefig(args.save_file)
-    plt.close()
+    plot_confmat(confmat, know_ood_labels=False)
 
     # OOD classes are known
     confmat = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
                                 ood_labels, ood_results, ood_uncertainties,
                                 args.uncertain_thresh, know_ood_labels=True)
-    plt.figure()
-    plt.imshow(confmat, cmap='hot')
-    plt.colorbar()
-    plt.tight_layout()
-    plt.savefig(args.save_file[:-4] + '2.png')
-    plt.close()
-
-    # ind_meanUs, ood_meanUs = [], []
-    # for c in range(101):
-    #     # average uncertainties of IND samples on IND class
-    #     ids = np.where(ind_results == c)[0]
-    #     ind_meanU = np.mean(ind_uncertainties[ids]) - 0.49
-    #     ind_meanUs.append(ind_meanU)
-    #     # average uncertainties of OOD samples on IND class
-    #     ids = np.where(ood_results == c)[0]
-    #     ood_meanU = np.mean(ood_uncertainties[ids]) - 0.49
-    #     ood_meanUs.append(ood_meanU)
-    # # plot the bar chart
-    # plt.figure(figsize=(8,4))  # (w, h)
-    # width = 0.35
-    # plt.bar(np.arange(101) - width/2, ind_meanUs, width, label='UCF-101')
-    # plt.bar(np.arange(101) + width/2, ood_meanUs, width, label='HMDB-51')
-    # plt.xlabel('UCF-101 Classes')
-    # plt.ylabel('Uncertainties')
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.savefig(args.save_file)
+    plot_confmat(confmat, know_ood_labels=True)
