@@ -49,10 +49,9 @@ def plot_confmat(confmat, know_ood_labels=False):
     # cbar = plt.colorbar()
     # cbar.ax.tick_params(labelsize=fontsize)
     plt.tight_layout()
-    if know_ood_labels:
-        args.save_file = args.save_file[:-4] + '_knownOOD.png'
-    plt.savefig(args.save_file)
-    plt.savefig(args.save_file[:-4] + '.pdf')
+    save_file = args.save_file[:-4] + '_knownOOD.png' if know_ood_labels else args.save_file
+    plt.savefig(save_file)
+    plt.savefig(save_file[:-4] + '.pdf')
     plt.close()
 
 if __name__ == '__main__':
@@ -77,13 +76,21 @@ if __name__ == '__main__':
         os.makedirs(result_path)
     
     # OOD classes are unknown
-    confmat = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
+    confmat1 = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
                                 ood_labels, ood_results, ood_uncertainties,
                                 args.uncertain_thresh, know_ood_labels=False)
-    plot_confmat(confmat, know_ood_labels=False)
+    plot_confmat(confmat1, know_ood_labels=False)
 
     # OOD classes are known
-    confmat = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
+    confmat2 = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
                                 ood_labels, ood_results, ood_uncertainties,
                                 args.uncertain_thresh, know_ood_labels=True)
-    plot_confmat(confmat, know_ood_labels=True)
+    plot_confmat(confmat2, know_ood_labels=True)
+
+    # save the confusion matrix for further analysis
+    np.savez(args.save_file[:-4], confmat_unknown_ood=confmat1, confmat_known_ood=confmat2)
+    votes_ind = np.sum(confmat1[:101, 101:], axis=1)
+    print("Top-10 false positive IND classes: ", np.argsort(votes_ind)[-10:])
+
+    votes_ood = np.sum(confmat1[101:, :101], axis=1)
+    print("Top-10 false negative IND classes: ", np.argsort(votes_ood)[-10:])

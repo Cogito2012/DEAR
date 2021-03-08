@@ -23,6 +23,20 @@ def parse_args():
     return args
 
 
+def get_data(known_split, known_classes):
+    known_data = []
+    labels = []
+    video_dir = os.path.join(os.path.dirname(known_split), 'videos')
+    with open(known_split, 'r') as f:
+        for line in f.readlines():
+            clsname, videoname = line.strip().split(' ')[0].split('/')
+            if clsname in known_classes.keys():
+                videofile = os.path.join(video_dir, clsname, videoname)
+                known_data.append(videofile)
+                labels.append(known_classes[clsname])
+    return known_data, labels
+
+
 def inference_recognizer(model, video_path):
     """Inference a video with the detector.
 
@@ -67,15 +81,14 @@ def extract_feature(video_files):
     cfg = model.cfg
     torch.backends.cudnn.benchmark = True
     cfg.data.test.test_mode = True
-
-    if cfg.model.cls_head.type in ['I3DBNNHead', 'TPNBNNHead']:
+    if 'bnn' in args.config:
         model.test_cfg.npass = 1
 
     X = []
     for videofile in tqdm(video_files, total=len(video_files), desc='Extract Feature'):
         feature = inference_recognizer(model, videofile)  # (2048,)
         X.append(feature)
-    
+    X = np.vstack(X)
     return X
 
 
@@ -95,50 +108,56 @@ if __name__ == '__main__':
     device = torch.device(args.device)
     set_deterministic(0)
 
-    known_classes = {'ParallelBars': 0, 'UnevenBars': 1, 'Diving': 2, 'Surfing': 3}
-    # known_classes = {'ParallelBars': 0, 'UnevenBars': 1}
-    known_data = []
-    labels = []
-    video_dir = os.path.join(os.path.dirname(args.known_split), '..', 'videos')
-    with open(args.known_split, 'r') as f:
-        for line in f.readlines():
-            clsname, videoname = line.strip().split('/')
-            if clsname in known_classes.keys():
-                videofile = os.path.join(video_dir, line.strip())
-                known_data.append(videofile)
-                labels.append(known_classes[clsname])
+    ind_clsID = [2, 10, 16, 69, 71, 21, 32, 41, 73, 29]   # UCF-101  73 21 41 32 29 10 16 69 71  2
+    ind_classes = {'Archery': 0, 'Biking': 1, 'BoxingPunchingBag': 2, 'PullUps': 3, 'PushUps': 4, 
+                   'CliffDiving': 5, 'GolfSwing': 6, 'HorseRiding': 7, 'RockClimbingIndoor': 8, 'FloorGymnastics': 9}
+    ood_clsID = [12, 20, 21, 22, 50, 15, 16, 17, 18, 19]  # HMDB-51  15 16 17 18 19 20 21 22 12 50
+    ood_classes = {'fall_floor': 10, 'kick': 10, 'kick_ball': 10, 'kiss': 10, 'wave': 10, 
+                   'golf': 10, 'handstand': 10, 'hit': 10, 'hug': 10, 'jump': 10}
+    feature_file = args.result_file[:-4] + '_feature_10p1.npz'
+
+    # get the data of known classes
+    known_data, known_labels = get_data(args.known_split, ind_classes)
     num_knowns = len(known_data)
-    
-    unknown_data = []
-    video_dir = os.path.join(os.path.dirname(args.unknown_split), '..', 'videos')
-    with open(args.unknown_split, 'r') as f:
-        for line in f.readlines():
-            videofile = os.path.join(video_dir, line.strip().split(' ')[0])
-            unknown_data.append(videofile)
-    # num_unknowns = int(num_knowns / len(known_classes))
-    num_unknowns = num_knowns
-    assert len(unknown_data) > num_unknowns
-    inds = np.random.choice(len(unknown_data), num_unknowns, replace=False)
-    unknown_data = [unknown_data[i] for i in inds]
-    labels += [len(known_classes)] * num_unknowns
-    labels = np.vstack(labels)
-    open_classes = {**known_classes, 'Unknowns': len(known_classes)}
+    # get the data of unknown classes
+    unknown_data, unknown_labels = get_data(args.unknown_split, ood_classes)
+    num_unknowns = len(unknown_data)
 
-    # extracting the feature
-    X = extract_feature(known_data + unknown_data)
-    X = np.vstack(X)
+    if not os.path.exists(feature_file):
+        # save the figure
+        result_path = os.path.dirname(args.result_file)
+        if not os.path.exists(result_path):
+            os.makedirs(result_path)
 
+        # extracting the feature
+        X = extract_feature(known_data + unknown_data)
+        
+        # save results
+        np.savez(feature_file[:-4], feature=X)
+    else:
+        results = np.load(feature_file, allow_pickle=True)
+        X = results['feature']
+
+    open_classes = {**ind_classes, 'Unknowns': len(ind_classes)}
+    open_labels = np.array(known_labels + [len(ind_classes)] * num_unknowns)
     # run tSNE
     print('running tSNE...')
     Y = TSNE(n_components=2, random_state=0).fit_transform(X)
+    plt.figure(figsize=(5,4))
+    plt.rcParams["font.family"] = "Arial"  # Times New Roman
+    fontsize = 10
     for k, v in open_classes.items():
-        inds = np.where(labels == v)[0]
-        plt.scatter(Y[inds, 0], Y[inds, 1], 15, label=k)
-    plt.legend()
-    # plt.show()
-
-    # save the figure
-    result_path = os.path.dirname(args.result_file)
-    if not os.path.exists(result_path):
-        os.makedirs(result_path)
+        inds = np.where(open_labels == v)[0]
+        if k == 'Unknowns':
+            plt.scatter(Y[inds, 0], Y[inds, 1], s=10, c='k', marker='^', label=k)
+        else:
+            plt.scatter(Y[inds, 0], Y[inds, 1], s=3)
+            plt.text(np.mean(Y[inds, 0])-5, np.mean(Y[inds, 1])+5, k, fontsize=fontsize)
+    xmin, xmax, ymin, ymax = np.min(Y[:, 0]), np.max(Y[:, 0]), np.min(Y[:, 1]), np.max(Y[:, 1])
+    plt.xlim(xmin-5, xmax + 15)
+    plt.ylim(ymin-5, ymax + 10)
+    plt.legend(loc='lower right', fontsize=fontsize)
+    plt.xticks([])
+    plt.yticks([])
     plt.savefig(args.result_file)
+    plt.savefig(args.result_file[:-4] + '.pdf')
