@@ -3,10 +3,12 @@ from .base import BaseHead
 from .i3d_head import I3DHead
 from .i3d_bnn_head import I3DBNNHead
 from .slowfast_head import SlowFastHead
+from .slowfast_bnn_head import SlowFastBNNHead
 from .ssn_head import SSNHead
 from .tpn_head import TPNHead
 from .tpn_bnn_head import TPNBNNHead
 from .tsm_head import TSMHead
+from .tsm_bnn_head import TSMBNNHead
 from .tsn_head import TSNHead
 from .x3d_head import X3DHead
 from .aux_head import AuxHead
@@ -15,6 +17,6 @@ from .debias_head import DebiasHead
 
 
 __all__ = [
-    'TSNHead', 'I3DHead', 'I3DBNNHead', 'BaseHead', 'TSMHead', 'SlowFastHead', 'SSNHead',
+    'TSNHead', 'I3DHead', 'I3DBNNHead', 'BaseHead', 'TSMHead', 'TSMBNNHead', 'SlowFastHead', 'SlowFastBNNHead', 'SSNHead',
     'TPNHead', 'TPNBNNHead', 'AudioTSNHead', 'X3DHead', 'AuxHead', 'RebiasHead', 'DebiasHead'
 ]
