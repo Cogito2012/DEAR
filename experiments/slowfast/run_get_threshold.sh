@@ -24,6 +24,16 @@ case ${MODEL} in
       --uncertainty BALD \
       --result_prefix ${RESULT_DIR}/SlowFast_DNN_BALD
    ;;
+   bnn)
+   #  get the BALD threshold for slowfast model trained on UCF-101
+   CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/get_threshold.py \
+      --config configs/recognition/slowfast/inference_slowfast_bnn.py \
+      --checkpoint work_dirs/slowfast/finetune_ucf101_slowfast_bnn/latest.pth \
+      --train_data ${TRAIN_DATA} \
+      --batch_size ${BATCHSIZE} \
+      --uncertainty BALD \
+      --result_prefix ${RESULT_DIR}/SlowFast_BNN_BALD
+   ;;
    edlnokl_avuc_debias)
    #  get the EDL threshold for SlowFast_EDL_AvUC_Debias model trained on UCF-101
    CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/get_threshold.py \

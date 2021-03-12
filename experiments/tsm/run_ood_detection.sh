@@ -39,6 +39,16 @@ case ${MODEL} in
         --uncertainty BALD \
         --result_prefix ${RESULT_DIR}/TSM_DNN_BALD_${OOD_DATASET}
     ;;
+    bnn)
+    # DNN with Dropout model
+    CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \
+        --config configs/recognition/tsm/inference_tsm_bnn.py \
+        --checkpoint work_dirs/tsm/finetune_ucf101_tsm_bnn/latest.pth \
+        --ind_data ${IND_DATA} \
+        --ood_data ${OOD_DATA} \
+        --uncertainty BALD \
+        --result_prefix ${RESULT_DIR}/TSM_BNN_BALD_${OOD_DATASET}
+    ;;
     edlnokl_avuc_debias)
     # Evidential Deep Learning (without KL divergence loss term) with AvU Calibration and Debiasing
     CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/ood_detection.py \

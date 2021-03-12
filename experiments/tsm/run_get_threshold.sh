@@ -24,6 +24,16 @@ case ${MODEL} in
       --uncertainty BALD \
       --result_prefix ${RESULT_DIR}/TSM_DNN_BALD
    ;;
+   bnn)
+   #  get the BALD threshold for tsm model trained on UCF-101
+   CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/get_threshold.py \
+      --config configs/recognition/tsm/inference_tsm_bnn.py \
+      --checkpoint work_dirs/tsm/finetune_ucf101_tsm_bnn/latest.pth \
+      --train_data ${TRAIN_DATA} \
+      --batch_size ${BATCHSIZE} \
+      --uncertainty BALD \
+      --result_prefix ${RESULT_DIR}/TSM_BNN_BALD
+   ;;
    edlnokl_avuc_debias)
    #  get the EDL threshold for TSM_EDL_AvUC_Debias model trained on UCF-101
    CUDA_VISIBLE_DEVICES=${DEVICE} python experiments/get_threshold.py \
