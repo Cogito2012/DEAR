@@ -1,8 +1,9 @@
+import torch
 import torch.nn as nn
+from mmcv.cnn import normal_init
 
 from ..registry import HEADS
 from .base import BaseHead
-from .rpl_dist import Dist
 
 
 @HEADS.register_module()
@@ -40,7 +41,7 @@ class I3DRPLHead(BaseHead):
             self.dropout = nn.Dropout(p=self.dropout_ratio)
         else:
             self.dropout = None
-        self.Dist = Dist(num_classes=self.num_classes, feat_dim=self.in_channels, num_centers=self.num_centers)
+        self.fc_centers = nn.Linear(self.in_channels, self.num_classes * self.num_centers, bias=False)
 
         if self.spatial_type == 'avg':
             # use `nn.AdaptiveAvgPool3d` to adaptively match the in_channels.
@@ -50,7 +51,28 @@ class I3DRPLHead(BaseHead):
 
     def init_weights(self):
         """Initiate the parameters from scratch."""
-        pass  # weights in Dist class are already initialized.
+        normal_init(self.fc_centers, std=self.init_std)
+
+
+    def compute_dist(self, features, center=None, metric='fc'):
+        if metric == 'l2':
+            f_2 = torch.sum(torch.pow(features, 2), dim=1, keepdim=True)
+            if center is None:
+                c_2 = torch.sum(torch.pow(self.fc_centers.weight, 2), dim=1, keepdim=True)
+                dist = f_2 - 2 * self.fc_centers(features) + torch.transpose(c_2, 1, 0)
+            else:
+                c_2 = torch.sum(torch.pow(center, 2), dim=1, keepdim=True)
+                dist = f_2 - 2*torch.matmul(features, torch.transpose(center, 1, 0)) + torch.transpose(c_2, 1, 0)
+            dist = dist / float(features.shape[1])
+        else:
+            if center is None:
+                dist = self.fc_centers(features)
+            else:
+                dist = features.matmul(center.t())
+        dist = torch.reshape(dist, [-1, self.num_classes, self.num_centers])
+        dist = torch.mean(dist, dim=2)
+        return dist
+
 
     def forward(self, x):
         """Defines the computation performed at every call.
@@ -70,7 +92,9 @@ class I3DRPLHead(BaseHead):
         # [N, in_channels, 1, 1, 1]
         x = x.view(x.shape[0], -1)
         # [N, in_channels]
-        dist = self.Dist(x)
+        dist = self.compute_dist(x)
         # [N, num_classes]
-        outputs = {'dist': dist, 'feature': x, 'centers': self.Dist.centers}
+        if self.loss_cls.__class__.__name__ == 'GCPLoss':
+            dist = -dist
+        outputs = {'dist': dist, 'feature': x, 'centers': self.fc_centers.weight}
         return outputs

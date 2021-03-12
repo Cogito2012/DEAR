@@ -34,7 +34,7 @@ class Recognizer3DRPL(Recognizer3D):
             x, _ = self.neck(x)
 
         outputs = self.cls_head(x)
-        cls_score = -outputs['dist']  # the negative distance is equivalent to the cls_score before softmax
+        cls_score = outputs['dist']  # the negative distance is equivalent to the cls_score before softmax
         cls_score = self.average_clip(cls_score, num_segs)
 
         return cls_score
@@ -55,5 +55,5 @@ class Recognizer3DRPL(Recognizer3D):
 
         x = self.extract_feat(imgs)
         outputs = self.cls_head(x)
-        outs = (-outputs['dist'], )
+        outs = (outputs['dist'], )
         return outs

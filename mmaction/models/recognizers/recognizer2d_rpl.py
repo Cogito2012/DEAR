@@ -63,7 +63,7 @@ class Recognizer2DRPL(Recognizer2D):
         #   3) `ThreeCrop/TenCrop/MultiGroupCrop` in `test_pipeline`
         #   4) `num_clips` in `SampleFrames` or its subclass if `clip_len != 1`
         outputs = self.cls_head(x, num_segs)
-        cls_score = -outputs['dist']  # the negative distance is equivalent to the cls_score before softmax
+        cls_score = outputs['dist']
         assert cls_score.size()[0] % batches == 0
         # calculate num_crops automatically
         cls_score = self.average_clip(cls_score,
@@ -93,5 +93,5 @@ class Recognizer2DRPL(Recognizer2D):
 
         x = self.extract_feat(imgs)
         outputs = self.cls_head(x, num_segs)
-        outs = (-outputs['dist'], )
+        outs = (outputs['dist'], )
         return outs

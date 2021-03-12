@@ -10,9 +10,10 @@ from .ohem_hinge_loss import OHEMHingeLoss
 from .ssn_loss import SSNLoss
 from .rebias_loss import RebiasLoss
 from .rpl_loss import RPLoss
+from .gcp_loss import GCPLoss
 
 __all__ = [
     'BaseWeightedLoss', 'CrossEntropyLoss', 'NLLLoss', 'BCELossWithLogits',
     'BinaryLogisticRegressionLoss', 'BMNLoss', 'OHEMHingeLoss', 'SSNLoss',
-    'HVULoss', "BayesianNNLoss", "EvidenceLoss", "RebiasLoss", 'RPLoss'
+    'HVULoss', "BayesianNNLoss", "EvidenceLoss", "RebiasLoss", 'RPLoss', 'GCPLoss'
 ]

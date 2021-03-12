@@ -7,14 +7,12 @@ from ...core import top_k_accuracy
 
 
 @LOSSES.register_module()
-class RPLoss(BaseWeightedLoss):
+class GCPLoss(BaseWeightedLoss):
     """Reciprocal Point Learning Loss."""
     def __init__(self, temperature=1, weight_pl=0.1, radius_init=1):
         super().__init__()
         self.temperature = temperature
         self.weight_pl = weight_pl
-        self.radius = torch.nn.Parameter(torch.Tensor(radius_init))
-        self.radius.data.fill_(0)
 
     def _forward(self, head_outs, labels, **kwargs):
         """Forward function.
@@ -35,8 +33,7 @@ class RPLoss(BaseWeightedLoss):
         logits = F.softmax(dist, dim=1)
         loss_closed = F.cross_entropy(dist / self.temperature, labels, **kwargs)
         center_batch = centers[labels, :]
-        _dis = (feature - center_batch).pow(2).mean(1)
-        loss_r = F.mse_loss(feature, self.radius) / 2
+        loss_r = F.mse_loss(feature, center_batch) / 2
         # gather losses
         losses = {'loss_cls': loss_closed, 'loss_open': self.weight_pl * loss_r}
 
