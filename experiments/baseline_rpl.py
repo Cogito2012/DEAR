@@ -106,7 +106,7 @@ def evaluate_softmax(ind_softmax, ood_softmax, ind_labels, ood_labels, ood_ncls,
     preds[confs >= threshold] = 0  # known class
     labels = np.concatenate((np.zeros_like(ind_labels), np.ones_like(ood_labels)))
     auc = roc_auc_score(labels, preds)
-    print('SoftMax: ClosedSet Accuracy (multi-class): %.3lf, OpenSet AUC (bin-class): %.3lf'%(acc * 100, auc * 100))
+    print('\nClosedSet Accuracy (multi-class): %.3lf, OpenSet AUC (bin-class): %.3lf'%(acc * 100, auc * 100))
 
     ind_results[ind_conf < thresh] = ind_ncls  # incorrect rejection
     # open set F1 score (multi-class)
@@ -188,7 +188,7 @@ if __name__ == '__main__':
         # run the inference on IND data
         ind_softmax, ind_labels = run_inference(args.config, args.checkpoint, args.ind_data, args.batch_size, device)
         # save
-        np.savez(result_file[:-4], ind_softmax=ind_softmax, ood_softmax=ood_softmax,
+        np.savez(testset_result[:-4], ind_softmax=ind_softmax, ood_softmax=ood_softmax,
                                    ind_label=ind_labels, ood_label=ood_labels)
     else:
         results = np.load(testset_result, allow_pickle=True)
