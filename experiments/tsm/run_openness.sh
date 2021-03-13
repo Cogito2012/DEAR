@@ -24,9 +24,9 @@ esac
 # OOD Detection comparison
 python experiments/compare_openness.py \
     --base_model tsm \
-    --baselines TSM_DNN_BALD TSM_EDLNoKLAvUCDebias_EDL \
-    --thresholds 0.000022 0.004549 \
-    --styles b r \
+    --baselines TSM_DNN_BALD TSM_BNN_BALD TSM_EDLNoKLAvUCDebias_EDL \
+    --thresholds 0.000022 0.000003 0.004549 \
+    --styles b k r \
     --ood_data ${OOD_DATA} \
     --ood_ncls ${NUM_CLASSES} \
     --ind_ncls 101 \

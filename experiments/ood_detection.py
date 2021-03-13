@@ -245,7 +245,7 @@ def main():
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     plt.xlim(0, 1.01)
-    plt.ylim(0, 40.01)
+    plt.ylim(0, 10.01)
     plt.tight_layout()
     plt.savefig(os.path.join(args.result_prefix + '_distribution.png'))
     plt.savefig(os.path.join(args.result_prefix + '_distribution.pdf'))
