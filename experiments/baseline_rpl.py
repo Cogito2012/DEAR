@@ -11,6 +11,8 @@ from mmcv.parallel import MMDataParallel
 import numpy as np
 from tqdm import tqdm
 from sklearn.metrics import f1_score, roc_auc_score, accuracy_score
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 def parse_args():

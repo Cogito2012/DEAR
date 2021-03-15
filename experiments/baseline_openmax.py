@@ -230,11 +230,11 @@ def compute_openmax_prob(openmax_score, openmax_score_u):
     return modified_scores
 
 
-def openmax_recalibrate(weibull_model, feature, score, rank=10, distance_type='eucos'):
+def openmax_recalibrate(weibull_model, feature, score, rank=1, distance_type='eucos'):
     num_channels, num_cls = score.shape
     # get the ranked alpha
-    alpharank = min(len(score), rank)
-    ranked_list = score.argsort().ravel()[::-1]
+    alpharank = min(num_cls, rank)
+    ranked_list = np.mean(score, axis=0).argsort().ravel()[::-1]
     alpha_weights = [((alpharank+1) - i)/float(alpharank) for i in range(1, alpharank+1)]
     ranked_alpha = np.zeros((num_cls,))
     for i in range(len(alpha_weights)):
