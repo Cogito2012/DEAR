@@ -16,8 +16,8 @@ fi
 DATA_DIR="../../../data/kinetics10"
 ANNO_DIR="../../../data/${DATASET}/annotations"
 SUBSET="./subset_list.txt"
-python download_subset.py ${ANNO_DIR}/kinetics_train.csv ${DATA_DIR}/videos_train --subset_file ${SUBSET} -t /ssd/data/tmp/kinetics10
-python download_subset.py ${ANNO_DIR}/kinetics_val.csv ${DATA_DIR}/videos_val --subset_file ${SUBSET} -t /ssd/data/tmp/kinetics10
+python download_subset.py ${ANNO_DIR}/kinetics_train.csv ${DATA_DIR}/videos_train --subset_file ${SUBSET} -t /ssd/data/tmp/kinetics10 -n 1
+python download_subset.py ${ANNO_DIR}/kinetics_val.csv ${DATA_DIR}/videos_val --subset_file ${SUBSET} -t /ssd/data/tmp/kinetics10 -n 1
 
 source deactivate kinetics
 conda remove -n kinetics --all
