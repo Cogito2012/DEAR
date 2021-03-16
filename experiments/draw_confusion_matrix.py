@@ -42,7 +42,7 @@ def confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
 def plot_confmat(confmat, know_ood_labels=False):
     plt.figure(figsize=(4,4))
     plt.rcParams["font.family"] = "Arial"  # Times New Roman
-    fontsize = 15
+    fontsize = 20
     plt.imshow(confmat, cmap='hot')
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)

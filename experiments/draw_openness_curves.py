@@ -114,53 +114,17 @@ def uncertainty_curvepoints(result_file, thresh, ind_ncls, ood_ncls, num_rand):
     return openness_list, macro_F1_list
 
 
-def main():
-    # SoftMax
-    print('Compute Open maF1 for SoftMax...')
-    result_file = 'experiments/i3d/results_baselines/openmax/I3D_OpenMax_%s_result.npz'%(args.ood_data)
-    openness_softmax, maF1_softmax = softmax_curvepoints(result_file, 0.996825, args.ood_ncls, args.num_rand)
-
-    # OpenMax
-    print('Compute Open maF1 for OpenMax...')
-    result_file = 'experiments/i3d/results_baselines/openmax/I3D_OpenMax_%s_result.npz'%(args.ood_data)
-    openness_openmax, maF1_openmax = openmax_curvepoints(result_file, args.ood_ncls, args.num_rand)
-
-    # MCDropout BALD
-    print('Compute Open maF1 for MC Dropout BALD...')
-    result_file = 'experiments/i3d/results/I3D_DNN_BALD_%s_result.npz'%(args.ood_data)
-    openness_dnn, maF1_dnn = uncertainty_curvepoints(result_file, 0.000433, args.ind_ncls, args.ood_ncls, args.num_rand)
-
-    # BNN SVI BALD
-    print('Compute Open maF1 for BNN SVI BALD...')
-    result_file = 'experiments/i3d/results/I3D_BNN_BALD_%s_result.npz'%(args.ood_data)
-    openness_bnn, maF1_bnn = uncertainty_curvepoints(result_file, 0.000004, args.ind_ncls, args.ood_ncls, args.num_rand)
-
-    # DEAR (vanilla)
-    print('Compute Open maF1 for DEAR (vanilla)...')
-    result_file = 'experiments/i3d/results/I3D_EDLNoKL_EDL_%s_result.npz'%(args.ood_data)
-    openness_enn, maF1_enn = uncertainty_curvepoints(result_file, 0.004547, args.ind_ncls, args.ood_ncls, args.num_rand)
-
-    # DEAR (full)
-    print('Compute Open maF1 for DEAR (full)...')
-    result_file = 'experiments/i3d/results/I3D_EDLNoKLAvUCDebias_EDL_%s_result.npz'%(args.ood_data)
-    openness_dear, maF1_dear = uncertainty_curvepoints(result_file, 0.004550, args.ind_ncls, args.ood_ncls, args.num_rand)
-
-    # draw F1 curve
+def plot_all_curves(openness, values, line_styles, fontsize=18):
     plt.figure(figsize=(8,6))  # (w, h)
-    plt.rcParams["font.family"] = "Arial"  # Times New Roman
-    fontsize = 15
-    plt.plot(openness_dear, maF1_dear, 'r-', linewidth=2, label='DEAR (full)')
-    plt.plot(openness_enn, maF1_enn, 'g-', linewidth=2, label='DEAR (vanilla)')
-    plt.plot(openness_softmax, maF1_softmax, 'b-', linewidth=2, label='SoftMax')
-    plt.plot(openness_bnn, maF1_bnn, 'c-', linewidth=2, label='BNN SVI + BALD')
-    plt.plot(openness_dnn, maF1_dnn, 'y-', linewidth=2, label='MC Dropout + BALD')
-    plt.plot(openness_openmax, maF1_openmax, 'k-', linewidth=2, label='OpenMax')
-    plt.xlim(0, max(openness_dear))
+    plt.rcParams["font.family"] = "Arial"
+    for k, v in values.items():
+        plt.plot(openness, v, line_styles[k], linewidth=2, label=k)
+    plt.xlim(0, max(openness))
     plt.ylim(60, 80)
     plt.xlabel('Openness (%)', fontsize=fontsize)
-    plt.ylabel('Average Open maF1 (%)', fontsize=fontsize)
+    plt.ylabel('Open maF1 (%)', fontsize=fontsize)
     plt.xticks(fontsize=fontsize)
-    plt.yticks(fontsize=fontsize)
+    plt.yticks(np.arange(60, 81, 5), fontsize=fontsize)
     plt.grid('on')
     plt.legend(fontsize=fontsize, loc='lower left')
     plt.tight_layout()
@@ -170,6 +134,89 @@ def main():
     plt.savefig(args.result_prefix + '_%s.png'%(args.ood_data))
     plt.savefig(args.result_prefix + '_%s.pdf'%(args.ood_data))
 
+def main_i3d():
+    # SoftMax
+    print('Compute Open maF1 for SoftMax...')
+    result_file = 'i3d/results_baselines/openmax/I3D_OpenMax_%s_result.npz'%(args.ood_data)
+    openness_softmax, maF1_softmax = softmax_curvepoints(result_file, 0.996825, args.ood_ncls, args.num_rand)
+
+    # OpenMax
+    print('Compute Open maF1 for OpenMax...')
+    result_file = 'i3d/results_baselines/openmax/I3D_OpenMax_%s_result.npz'%(args.ood_data)
+    openness_openmax, maF1_openmax = openmax_curvepoints(result_file, args.ood_ncls, args.num_rand)
+
+    # RPL
+    print('Compute Open maF1 for RPL...')
+    result_file = 'i3d/results_baselines/rpl/I3D_RPL_%s_result.npz'%(args.ood_data)
+    openness_rpl, maF1_rpl = softmax_curvepoints(result_file, 0.995178, args.ood_ncls, args.num_rand)
+
+    # MCDropout BALD
+    print('Compute Open maF1 for MC Dropout BALD...')
+    result_file = 'i3d/results/I3D_DNN_BALD_%s_result.npz'%(args.ood_data)
+    openness_dnn, maF1_dnn = uncertainty_curvepoints(result_file, 0.000433, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # BNN SVI BALD
+    print('Compute Open maF1 for BNN SVI BALD...')
+    result_file = 'i3d/results/I3D_BNN_BALD_%s_result.npz'%(args.ood_data)
+    openness_bnn, maF1_bnn = uncertainty_curvepoints(result_file, 0.000004, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # DEAR (vanilla)
+    print('Compute Open maF1 for DEAR (vanilla)...')
+    result_file = 'i3d/results/I3D_EDLNoKL_EDL_%s_result.npz'%(args.ood_data)
+    openness_enn, maF1_enn = uncertainty_curvepoints(result_file, 0.004547, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # DEAR (full)
+    print('Compute Open maF1 for DEAR (full)...')
+    result_file = 'i3d/results/I3D_EDLNoKLAvUCDebias_EDL_%s_result.npz'%(args.ood_data)
+    openness_dear, maF1_dear = uncertainty_curvepoints(result_file, 0.004550, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # draw F1 curve
+    line_styles = {'DEAR (full)': 'r-', 'DEAR (vanilla)': 'g-', 'SoftMax': 'b-', 'RPL': 'm-', 'BNN SVI': 'c-', 'MC Dropout': 'y-', 'OpenMax': 'k-'}
+    values = {'DEAR (full)': maF1_dear, 'DEAR (vanilla)': maF1_enn, 'SoftMax': maF1_softmax, 'RPL': maF1_rpl, 'BNN SVI': maF1_bnn, 'MC Dropout': maF1_dnn, 'OpenMax': maF1_openmax}
+    plot_all_curves(openness_dear, values, line_styles, fontsize=22)
+
+
+def main_slowfast():
+    # SoftMax
+    print('Compute Open maF1 for SoftMax...')
+    result_file = 'slowfast/results_baselines/openmax/SlowFast_OpenMax_%s_result.npz'%(args.ood_data)
+    openness_softmax, maF1_softmax = softmax_curvepoints(result_file, 0.996825, args.ood_ncls, args.num_rand)
+
+    # OpenMax
+    print('Compute Open maF1 for OpenMax...')
+    result_file = 'slowfast/results_baselines/openmax/SlowFast_OpenMax_%s_result.npz'%(args.ood_data)
+    openness_openmax, maF1_openmax = openmax_curvepoints(result_file, args.ood_ncls, args.num_rand)
+
+    # RPL
+    print('Compute Open maF1 for RPL...')
+    result_file = 'slowfast/results_baselines/rpl/SlowFast_RPL_%s_result.npz'%(args.ood_data)
+    openness_rpl, maF1_rpl = softmax_curvepoints(result_file, 0.995178, args.ood_ncls, args.num_rand)
+
+    # MCDropout BALD
+    print('Compute Open maF1 for MC Dropout BALD...')
+    result_file = 'slowfast/results/SlowFast_DNN_BALD_%s_result.npz'%(args.ood_data)
+    openness_dnn, maF1_dnn = uncertainty_curvepoints(result_file, 0.000433, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # BNN SVI BALD
+    print('Compute Open maF1 for BNN SVI BALD...')
+    result_file = 'slowfast/results/SlowFast_BNN_BALD_%s_result.npz'%(args.ood_data)
+    openness_bnn, maF1_bnn = uncertainty_curvepoints(result_file, 0.000004, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # DEAR (vanilla)
+    print('Compute Open maF1 for DEAR (vanilla)...')
+    result_file = 'slowfast/results/SlowFast_EDLNoKL_EDL_%s_result.npz'%(args.ood_data)
+    openness_enn, maF1_enn = uncertainty_curvepoints(result_file, 0.004547, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # DEAR (full)
+    print('Compute Open maF1 for DEAR (full)...')
+    result_file = 'slowfast/results/SlowFast_EDLNoKLAvUCDebias_EDL_%s_result.npz'%(args.ood_data)
+    openness_dear, maF1_dear = uncertainty_curvepoints(result_file, 0.004550, args.ind_ncls, args.ood_ncls, args.num_rand)
+
+    # draw F1 curve
+    line_styles = {'DEAR (full)': 'r-', 'DEAR (vanilla)': 'g-', 'SoftMax': 'b-', 'RPL': 'm-', 'BNN SVI': 'c-', 'MC Dropout': 'y-', 'OpenMax': 'k-'}
+    values = {'DEAR (full)': maF1_dear, 'DEAR (vanilla)': maF1_enn, 'SoftMax': maF1_softmax, 'RPL': maF1_rpl, 'BNN SVI': maF1_bnn, 'MC Dropout': maF1_dnn, 'OpenMax': maF1_openmax}
+    plot_all_curves(openness_dear, values, line_styles, fontsize=20)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Compare the performance of Open macroF1 against openness')
@@ -178,11 +225,16 @@ def parse_args():
     parser.add_argument('--ood_ncls', type=int, default=51, help='the number of classes in unknwon dataset')
     parser.add_argument('--ood_data', default='HMDB', help='the name of OOD dataset.')
     parser.add_argument('--num_rand', type=int, default=10, help='the number of random selection for ood classes')
-    parser.add_argument('--result_prefix', default='./temp/F1_openness')
+    parser.add_argument('--result_prefix', default='../temp/F1_openness')
     args = parser.parse_args()
     return args
 
 if __name__ == '__main__':
     np.random.seed(123)
     args = parse_args()
-    main()
+
+    # draw results on I3D
+    main_i3d()
+
+    # # draw results on TPN
+    # main_slowfast()
