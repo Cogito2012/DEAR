@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.lines import Line2D
 
 
 def draw_curves():
@@ -125,67 +126,85 @@ def draw_one_curve(data_dict, markers, markercolor='g', markersize=80, fontsize=
         x_data.append(v[1])
         y_data.append(v[0])
         # Marker: OpenMax
-        if k == 'DEAR':
+        if k == 'DEAR (Ours)':
             plt.scatter(v[1], v[0], marker=markers[k], s=markersize*2, color=markercolor)
         else:
             plt.scatter(v[1], v[0], marker=markers[k], s=markersize, color=markercolor)
         if add_marker_text:
-            plt.text(v[1] + text_offset[0], v[0]+ text_offset[1], k, fontsize=fontsize)
+            # plt.text(v[1] + text_offset[0], v[0]+ text_offset[1], k, fontsize=fontsize)
+            pass
     # Line: I3D for MiT
-    plt.plot(x_data, y_data, linestyle, linewidth=2, label=label, markersize=1)
+    line_hd, = plt.plot(x_data, y_data, linestyle, linewidth=2, label=label, markersize=1)
+    return line_hd
     
 
 def draw_mit_curves():
-    fig = plt.figure(figsize=(8,6))
+    fig, ax = plt.subplots(figsize=(8,6))
     plt.rcParams["font.family"] = "Arial"
-    fontsize = 22
+    fontsize = 23
     markersize = 80
 
     # (open maF1, open-set AUC)
     # I3D
     I3D_OpenMax = [66.22, 77.76]
     I3D_Dropout = [68.11, 79.14]
+    I3D_BNNSVI = [68.65, 79.50]
     I3D_SoftMax = [68.84, 79.94]
+    I3D_RPL = [68.11, 79.16]
     I3D_DEAR = [69.98, 81.54]
     # TSM
     TSM_OpenMax = [71.81, 83.05]
     TSM_Dropout = [65.32, 78.35]
+    TSM_BNNSVI = [64.28, 77.39]
     TSM_SoftMax = [71.68, 82.38]
+    TSM_RPL = [63.92, 77.28]
     TSM_DEAR = [70.15, 83.92]
     # TPN
     TPN_OpenMax = [64.80, 76.26]
     TPN_Dropout = [65.77, 77.76]
+    TPN_BNNSVI = [61.40, 75.32]
     TPN_SoftMax = [70.82, 81.35]
+    TPN_RPL = [66.21, 78.21]
     TPN_DEAR = [71.18, 81.80]
     # SlowFast
     SlowFast_OpenMax = [72.48, 80.62]
     SlowFast_Dropout = [67.53, 78.49]
+    SlowFast_BNNSVI = [65.22, 77.39]
     SlowFast_SoftMax = [74.42, 82.88]
+    SlowFast_RPL = [66.23, 77.85]
     SlowFast_DEAR = [77.28, 86.99]
 
-    markers = {'OpenMax': '^', 'Dropout': 's', 'SoftMax': 'o', 'DEAR': '*'}
+    markers = {'DEAR (Ours)': '*', 'SoftMax': 'o', 'OpenMax': '^', 'RPL': 'd', 'MC Dropout': 's', 'BNN SVI': 'P'}
     
     # Line: I3D for MiT
-    data_dict = {'OpenMax': I3D_OpenMax, 'Dropout': I3D_Dropout, 'SoftMax': I3D_SoftMax, 'DEAR': I3D_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='g', markersize=markersize, fontsize=fontsize, label='I3D', linestyle='g-')
+    data_dict = {'OpenMax': I3D_OpenMax, 'MC Dropout': I3D_Dropout, 'BNN SVI': I3D_BNNSVI, 'SoftMax': I3D_SoftMax, 'RPL': I3D_RPL, 'DEAR (Ours)': I3D_DEAR}
+    line1_hd = draw_one_curve(data_dict, markers=markers, markercolor='g', markersize=markersize, fontsize=fontsize, label='I3D', linestyle='g-')
 
-    data_dict = {'OpenMax': TSM_OpenMax, 'Dropout': TSM_Dropout, 'SoftMax': TSM_SoftMax, 'DEAR': TSM_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='k', markersize=markersize, fontsize=fontsize, label='TSM', linestyle='k-')
+    data_dict = {'OpenMax': TSM_OpenMax, 'MC Dropout': TSM_Dropout, 'BNN SVI': TSM_BNNSVI, 'SoftMax': TSM_SoftMax, 'RPL': TSM_RPL, 'DEAR (Ours)': TSM_DEAR}
+    line2_hd = draw_one_curve(data_dict, markers=markers, markercolor='k', markersize=markersize, fontsize=fontsize, label='TSM', linestyle='k-')
 
-    data_dict = {'OpenMax': TPN_OpenMax, 'Dropout': TPN_Dropout, 'SoftMax': TPN_SoftMax, 'DEAR': TPN_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='b', markersize=markersize, fontsize=fontsize, label='TPN', linestyle='b-')
+    data_dict = {'OpenMax': TPN_OpenMax, 'MC Dropout': TPN_Dropout, 'BNN SVI': TPN_BNNSVI, 'SoftMax': TPN_SoftMax, 'RPL': TPN_RPL, 'DEAR (Ours)': TPN_DEAR}
+    line3_hd = draw_one_curve(data_dict, markers=markers, markercolor='b', markersize=markersize, fontsize=fontsize, label='TPN', linestyle='b-')
 
-    data_dict = {'OpenMax': SlowFast_OpenMax, 'Dropout': SlowFast_Dropout, 'SoftMax': SlowFast_SoftMax, 'DEAR': SlowFast_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='r', markersize=markersize, fontsize=fontsize, label='SlowFast', linestyle='r-', 
+    data_dict = {'OpenMax': SlowFast_OpenMax, 'MC Dropout': SlowFast_Dropout, 'BNN SVI': SlowFast_BNNSVI, 'SoftMax': SlowFast_SoftMax, 'RPL': SlowFast_RPL, 'DEAR (Ours)': SlowFast_DEAR}
+    line4_hd = draw_one_curve(data_dict, markers=markers, markercolor='r', markersize=markersize, fontsize=fontsize, label='SlowFast', linestyle='r-', 
                     add_marker_text=True, text_offset=[-2.2, -0.2])
     
-    plt.ylim(64, 78)
+    marker_elements = []
+    for k, v in markers.items():
+        msize = 18 if k == 'DEAR (Ours)' else 12
+        elem = Line2D([0], [0], marker=v, label=k, markersize=msize, linestyle="None")
+        marker_elements.append(elem)
+    marker_legend = ax.legend(handles=marker_elements, fontsize=fontsize-3, loc='lower right')
+    ax.add_artist(marker_legend)
+
+    plt.ylim(60, 78)
     plt.xlim(75, 88)
     plt.ylabel('Open maF1 (%)', fontsize=fontsize)
     plt.xlabel('Open-Set AUC Score (%)', fontsize=fontsize)
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
-    plt.legend(loc='lower right', fontsize=fontsize-2)
+    plt.legend(handles=[line1_hd, line2_hd, line3_hd, line4_hd], loc='upper left', fontsize=fontsize-3)
     plt.title('MiT-v2 as Unknown', fontsize=fontsize)
     plt.grid('on', linestyle='--')
     plt.tight_layout()
@@ -195,56 +214,73 @@ def draw_mit_curves():
 
 
 def draw_hmdb_curves():
-    fig = plt.figure(figsize=(8,6))
+    fig, ax = plt.subplots(figsize=(8,6))
     plt.rcParams["font.family"] = "Arial"
-    fontsize = 25
+    fontsize = 23
     markersize = 80
 
     # (open maF1, open-set AUC)
     # I3D
     I3D_OpenMax = [67.85, 74.34]
     I3D_Dropout = [71.13, 75.07]
+    I3D_BNNSVI = [71.57, 74.66]
     I3D_SoftMax = [73.19, 75.68]
+    I3D_RPL = [71.48, 75.20]
     I3D_DEAR = [77.24, 77.08]
     # TSM
     TSM_OpenMax = [74.17, 77.07]
     TSM_Dropout = [71.52, 73.85]
+    TSM_BNNSVI = [69.11, 73.42]
     TSM_SoftMax = [78.27, 77.99]
+    TSM_RPL = [69.34, 73.62]
     TSM_DEAR = [84.69, 78.65]
     # TPN
     TPN_OpenMax = [65.27, 74.12]
     TPN_Dropout = [68.45, 74.13]
+    TPN_BNNSVI = [63.81, 72.68]
     TPN_SoftMax = [76.23, 77.97]
+    TPN_RPL = [70.31, 75.32]
     TPN_DEAR = [81.79, 79.23]
     # SlowFast
     SlowFast_OpenMax = [73.57, 78.76]
     SlowFast_Dropout = [70.55, 75.41]
+    SlowFast_BNNSVI = [69.19, 74.78]
     SlowFast_SoftMax = [78.04, 79.16]
+    SlowFast_RPL = [68.32, 74.23]
     SlowFast_DEAR = [85.48, 82.94]
 
-    markers = {'OpenMax': '^', 'Dropout': 's', 'SoftMax': 'o', 'DEAR': '*'}
+    markers = {'DEAR (Ours)': '*', 'SoftMax': 'o', 'OpenMax': '^', 'RPL': 'd', 'MC Dropout': 's', 'BNN SVI': 'P'}
     
     # Line: I3D for HMDB
-    data_dict = {'OpenMax': I3D_OpenMax, 'Dropout': I3D_Dropout, 'SoftMax': I3D_SoftMax, 'DEAR': I3D_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='g', markersize=markersize, fontsize=fontsize, label='I3D', linestyle='g-')
+    data_dict = {'OpenMax': I3D_OpenMax, 'MC Dropout': I3D_Dropout, 'BNN SVI': I3D_BNNSVI, 'SoftMax': I3D_SoftMax, 'RPL': I3D_RPL, 'DEAR (Ours)': I3D_DEAR}
+    line1_hd = draw_one_curve(data_dict, markers=markers, markercolor='g', markersize=markersize, fontsize=fontsize, label='I3D', linestyle='g-')
 
-    data_dict = {'OpenMax': TSM_OpenMax, 'Dropout': TSM_Dropout, 'SoftMax': TSM_SoftMax, 'DEAR': TSM_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='k', markersize=markersize, fontsize=fontsize, label='TSM', linestyle='k-')
+    data_dict = {'OpenMax': TSM_OpenMax, 'MC Dropout': TSM_Dropout, 'BNN SVI': TSM_BNNSVI, 'SoftMax': TSM_SoftMax, 'RPL': TSM_RPL, 'DEAR (Ours)': TSM_DEAR}
+    line2_hd = draw_one_curve(data_dict, markers=markers, markercolor='k', markersize=markersize, fontsize=fontsize, label='TSM', linestyle='k-')
 
-    data_dict = {'OpenMax': TPN_OpenMax, 'Dropout': TPN_Dropout, 'SoftMax': TPN_SoftMax, 'DEAR': TPN_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='b', markersize=markersize, fontsize=fontsize, label='TPN', linestyle='b-')
+    data_dict = {'OpenMax': TPN_OpenMax, 'MC Dropout': TPN_Dropout, 'BNN SVI': TPN_BNNSVI, 'SoftMax': TPN_SoftMax, 'RPL': TPN_RPL, 'DEAR (Ours)': TPN_DEAR}
+    line3_hd = draw_one_curve(data_dict, markers=markers, markercolor='b', markersize=markersize, fontsize=fontsize, label='TPN', linestyle='b-')
 
-    data_dict = {'OpenMax': SlowFast_OpenMax, 'Dropout': SlowFast_Dropout, 'SoftMax': SlowFast_SoftMax, 'DEAR': SlowFast_DEAR}
-    draw_one_curve(data_dict, markers=markers, markercolor='r', markersize=markersize, fontsize=fontsize, label='SlowFast', linestyle='r-', 
+    data_dict = {'OpenMax': SlowFast_OpenMax, 'MC Dropout': SlowFast_Dropout, 'BNN SVI': SlowFast_BNNSVI, 'SoftMax': SlowFast_SoftMax, 'RPL': SlowFast_RPL, 'DEAR (Ours)': SlowFast_DEAR}
+    line4_hd = draw_one_curve(data_dict, markers=markers, markercolor='r', markersize=markersize, fontsize=fontsize, label='SlowFast', linestyle='r-', 
                     add_marker_text=True, text_offset=[0.2, -1.5])
+
     
+    marker_elements = []
+    for k, v in markers.items():
+        msize = 18 if k == 'DEAR (Ours)' else 12
+        elem = Line2D([0], [0], marker=v, label=k, markersize=msize, linestyle="None")
+        marker_elements.append(elem)
+    marker_legend = ax.legend(handles=marker_elements, fontsize=fontsize-3, loc='lower right')
+    ax.add_artist(marker_legend)
+
     plt.ylim(55, 90)
-    plt.xlim(73, 85)
+    plt.xlim(70, 85)
     plt.ylabel('Open maF1 (%)', fontsize=fontsize)
     plt.xlabel('Open-Set AUC Score (%)', fontsize=fontsize)
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
-    plt.legend(loc='lower right', fontsize=fontsize-2)
+    plt.legend(handles=[line1_hd, line2_hd, line3_hd, line4_hd], loc='upper left', fontsize=fontsize-3)
     plt.grid('on', linestyle='--')
     plt.title('HMDB-51 as Unknown', fontsize=fontsize)
     plt.tight_layout()
