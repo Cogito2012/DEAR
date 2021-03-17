@@ -3,6 +3,9 @@ import argparse
 import os
 import matplotlib.pyplot as plt
 # from mmaction.core.evaluation import confusion_matrix
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.ticker as ticker
+
 
 def confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
                       ood_labels, ood_results, ood_uncertainties,
@@ -40,18 +43,26 @@ def confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
 
 
 def plot_confmat(confmat, know_ood_labels=False):
-    plt.figure(figsize=(4,4))
+    fig = plt.figure(figsize=(4,4))
     plt.rcParams["font.family"] = "Arial"  # Times New Roman
     fontsize = 20
-    plt.imshow(confmat, cmap='hot')
+    ax = plt.gca()
+    im = ax.imshow(confmat * 1000, cmap='hot')
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
-    # cbar = plt.colorbar()
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    cbar = plt.colorbar(im, cax=cax)
+    # cbar.locator = ticker.MaxNLocator(nbins=5)
+    # # barticks = np.linspace(np.min(confmat) * 1000, np.max(confmat) * 1000, 5).tolist()
+    # # cbar.set_ticks(barticks)
     # cbar.ax.tick_params(labelsize=fontsize)
+    cbar.set_ticks([])
+    cbar.update_ticks()
     plt.tight_layout()
     save_file = args.save_file[:-4] + '_knownOOD.png' if know_ood_labels else args.save_file
-    plt.savefig(save_file)
-    plt.savefig(save_file[:-4] + '.pdf')
+    plt.savefig(save_file, bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
+    plt.savefig(save_file[:-4] + '.pdf', bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
     plt.close()
 
 if __name__ == '__main__':
@@ -81,16 +92,16 @@ if __name__ == '__main__':
                                 args.uncertain_thresh, know_ood_labels=False)
     plot_confmat(confmat1, know_ood_labels=False)
 
-    # OOD classes are known
-    confmat2 = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
-                                ood_labels, ood_results, ood_uncertainties,
-                                args.uncertain_thresh, know_ood_labels=True)
-    plot_confmat(confmat2, know_ood_labels=True)
+    # # OOD classes are known
+    # confmat2 = confusion_maxtrix(ind_labels, ind_results, ind_uncertainties,
+    #                             ood_labels, ood_results, ood_uncertainties,
+    #                             args.uncertain_thresh, know_ood_labels=True)
+    # plot_confmat(confmat2, know_ood_labels=True)
 
-    # save the confusion matrix for further analysis
-    np.savez(args.save_file[:-4], confmat_unknown_ood=confmat1, confmat_known_ood=confmat2)
-    votes_ind = np.sum(confmat1[:101, 101:], axis=1)
-    print("Top-10 false positive IND classes: ", np.argsort(votes_ind)[-10:])
+    # # save the confusion matrix for further analysis
+    # np.savez(args.save_file[:-4], confmat_unknown_ood=confmat1, confmat_known_ood=confmat2)
+    # votes_ind = np.sum(confmat1[:101, 101:], axis=1)
+    # print("Top-10 false positive IND classes: ", np.argsort(votes_ind)[-10:])
 
-    votes_ood = np.sum(confmat1[101:, :101], axis=1)
-    print("Top-10 false negative IND classes: ", np.argsort(votes_ood)[-10:])
+    # votes_ood = np.sum(confmat1[101:, :101], axis=1)
+    # print("Top-10 false negative IND classes: ", np.argsort(votes_ood)[-10:])

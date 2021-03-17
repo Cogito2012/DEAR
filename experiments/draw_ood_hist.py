@@ -15,7 +15,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def plot_by_uncertainty(result_file, fontsize=16):
+def plot_by_uncertainty(result_file, auc=80, fontsize=16):
     assert os.path.exists(result_file), 'result file not exists! %s'%(result_file)
     results = np.load(result_file, allow_pickle=True)
     ind_confidences = results['ind_conf']
@@ -33,12 +33,13 @@ def plot_by_uncertainty(result_file, fontsize=16):
     ood_uncertainties = np.array(ood_uncertainties)
     ood_uncertainties = (ood_uncertainties-np.min(ood_uncertainties)) / (np.max(ood_uncertainties) - np.min(ood_uncertainties)) # normalize
 
-    plt.figure(figsize=(5,4))  # (w, h)
+    fig = plt.figure(figsize=(5,4))  # (w, h)
     plt.rcParams["font.family"] = "Arial"  # Times New Roman
     plt.hist([ind_uncertainties, ood_uncertainties], 50, 
             density=True, histtype='bar', color=['blue', 'red'], 
             label=['in-distribution (%s)'%(args.ind_data), 'out-of-distribution (%s)'%(args.ood_data)])
     plt.legend(fontsize=fontsize)
+    plt.text(0.6, 6, 'AUC = %.2lf'%(auc), fontsize=fontsize)
     plt.xlabel('%s uncertainty'%(args.uncertainty), fontsize=fontsize)
     plt.ylabel('density', fontsize=fontsize)
     plt.xticks(fontsize=fontsize)
@@ -51,8 +52,8 @@ def plot_by_uncertainty(result_file, fontsize=16):
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
     # save the figure
-    plt.savefig(os.path.join(args.result_prefix + '_distribution.png'))
-    plt.savefig(os.path.join(args.result_prefix + '_distribution.pdf'))
+    plt.savefig(os.path.join(args.result_prefix + '_distribution.png'), bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
+    plt.savefig(os.path.join(args.result_prefix + '_distribution.pdf'), bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
 
 
 
@@ -67,25 +68,29 @@ if __name__ == '__main__':
     result_file = 'i3d/results/I3D_DNN_BALD_HMDB_result.npz'
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_DNN_BALD_HMDB'
-    plot_by_uncertainty(result_file, fontsize=16)
+    auc = 75.07
+    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
 
     # I3D BNN SVI on HMDB
     result_file = 'i3d/results/I3D_BNN_BALD_HMDB_result.npz'
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_BNN_BALD_HMDB'
-    plot_by_uncertainty(result_file, fontsize=16)
+    auc = 74.66
+    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
 
     # I3D DRIVE (vanilla) on HMDB
     result_file = 'i3d/results/I3D_EDLNoKL_EDL_HMDB_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKL_EDL_HMDB'
-    plot_by_uncertainty(result_file, fontsize=16)
+    auc = 76.41
+    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
 
     # I3D DRIVE (full) on HMDB
     result_file = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_HMDB_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_HMDB'
-    plot_by_uncertainty(result_file, fontsize=16)
+    auc = 77.08
+    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
     
     ############################### MiT-v2 as unknown ######################################
 
@@ -94,22 +99,26 @@ if __name__ == '__main__':
     result_file = 'i3d/results/I3D_DNN_BALD_MiT_result.npz'
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_DNN_BALD_MiT'
-    plot_by_uncertainty(result_file, fontsize=17)
+    auc = 79.14
+    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
 
     # I3D BNN SVI on MiT-v2
     result_file = 'i3d/results/I3D_BNN_BALD_MiT_result.npz'
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_BNN_BALD_MiT'
-    plot_by_uncertainty(result_file, fontsize=17)
+    auc = 79.50
+    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
 
     # I3D DRIVE (vanilla) on MiT-v2
     result_file = 'i3d/results/I3D_EDLNoKL_EDL_MiT_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKL_EDL_MiT'
-    plot_by_uncertainty(result_file, fontsize=17)
+    auc = 81.43
+    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
 
     # I3D DRIVE (full) on MiT-v2
     result_file = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_MiT_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_MiT'
-    plot_by_uncertainty(result_file, fontsize=17)
+    auc = 81.54
+    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
