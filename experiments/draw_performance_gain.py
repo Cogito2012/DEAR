@@ -127,7 +127,7 @@ def draw_one_curve(data_dict, markers, markercolor='g', markersize=80, fontsize=
         y_data.append(v[0])
         # Marker: OpenMax
         if k == 'DEAR (Ours)':
-            plt.scatter(v[1], v[0], marker=markers[k], s=markersize*2, color=markercolor)
+            plt.scatter(v[1], v[0], marker=markers[k], s=markersize*4, color=markercolor)
         else:
             plt.scatter(v[1], v[0], marker=markers[k], s=markersize, color=markercolor)
         if add_marker_text:
@@ -141,7 +141,7 @@ def draw_one_curve(data_dict, markers, markercolor='g', markersize=80, fontsize=
 def draw_mit_curves():
     fig, ax = plt.subplots(figsize=(8,6))
     plt.rcParams["font.family"] = "Arial"
-    fontsize = 23
+    fontsize = 25
     markersize = 80
 
     # (open maF1, open-set AUC)
@@ -171,7 +171,7 @@ def draw_mit_curves():
     SlowFast_Dropout = [67.53, 78.49]
     SlowFast_BNNSVI = [65.22, 77.39]
     SlowFast_SoftMax = [74.42, 82.88]
-    SlowFast_RPL = [66.23, 77.85]
+    SlowFast_RPL = [66.33, 77.42]
     SlowFast_DEAR = [77.28, 86.99]
 
     markers = {'DEAR (Ours)': '*', 'SoftMax': 'o', 'OpenMax': '^', 'RPL': 'd', 'MC Dropout': 's', 'BNN SVI': 'P'}
@@ -195,28 +195,28 @@ def draw_mit_curves():
         msize = 18 if k == 'DEAR (Ours)' else 12
         elem = Line2D([0], [0], marker=v, label=k, markersize=msize, linestyle="None")
         marker_elements.append(elem)
-    marker_legend = ax.legend(handles=marker_elements, fontsize=fontsize-3, loc='lower right')
+    marker_legend = ax.legend(handles=marker_elements, fontsize=fontsize-3, loc='lower right', ncol=1, handletextpad=0.05, columnspacing=0.05, borderaxespad=0.1)
     ax.add_artist(marker_legend)
 
     plt.ylim(60, 78)
     plt.xlim(75, 88)
     plt.ylabel('Open maF1 (%)', fontsize=fontsize)
     plt.xlabel('Open-Set AUC Score (%)', fontsize=fontsize)
-    plt.xticks(fontsize=fontsize)
-    plt.yticks(fontsize=fontsize)
-    plt.legend(handles=[line1_hd, line2_hd, line3_hd, line4_hd], loc='upper left', fontsize=fontsize-3)
+    plt.xticks(np.arange(75, 89, 4), fontsize=fontsize)
+    plt.yticks(np.arange(60, 79, 4), fontsize=fontsize)
+    plt.legend(handles=[line1_hd, line2_hd, line3_hd, line4_hd], loc='upper left', fontsize=fontsize-3, handletextpad=0.5, borderaxespad=0.1)
     plt.title('MiT-v2 as Unknown', fontsize=fontsize)
     plt.grid('on', linestyle='--')
     plt.tight_layout()
-    plt.savefig('../temp/compare_gain_mit.png')
-    plt.savefig('../temp/compare_gain_mit.pdf')
+    plt.savefig('../temp/compare_gain_mit.png', bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
+    plt.savefig('../temp/compare_gain_mit.pdf', bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
 
 
 
 def draw_hmdb_curves():
     fig, ax = plt.subplots(figsize=(8,6))
     plt.rcParams["font.family"] = "Arial"
-    fontsize = 23
+    fontsize = 25
     markersize = 80
 
     # (open maF1, open-set AUC)
@@ -271,21 +271,21 @@ def draw_hmdb_curves():
         msize = 18 if k == 'DEAR (Ours)' else 12
         elem = Line2D([0], [0], marker=v, label=k, markersize=msize, linestyle="None")
         marker_elements.append(elem)
-    marker_legend = ax.legend(handles=marker_elements, fontsize=fontsize-3, loc='lower right')
+    marker_legend = ax.legend(handles=marker_elements, fontsize=fontsize-3, loc='lower right', ncol=1, handletextpad=0.3, columnspacing=0.2, borderaxespad=0.1)
     ax.add_artist(marker_legend)
 
-    plt.ylim(55, 90)
-    plt.xlim(70, 85)
+    plt.ylim(60, 88)
+    plt.xlim(72, 85)
     plt.ylabel('Open maF1 (%)', fontsize=fontsize)
     plt.xlabel('Open-Set AUC Score (%)', fontsize=fontsize)
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
-    plt.legend(handles=[line1_hd, line2_hd, line3_hd, line4_hd], loc='upper left', fontsize=fontsize-3)
+    plt.legend(handles=[line1_hd, line2_hd, line3_hd, line4_hd], loc='upper left', fontsize=fontsize-3, handletextpad=0.5, borderaxespad=0.1)
     plt.grid('on', linestyle='--')
     plt.title('HMDB-51 as Unknown', fontsize=fontsize)
     plt.tight_layout()
-    plt.savefig('../temp/compare_gain_hmdb.png')
-    plt.savefig('../temp/compare_gain_hmdb.pdf')
+    plt.savefig('../temp/compare_gain_hmdb.png', bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
+    plt.savefig('../temp/compare_gain_hmdb.pdf', bbox_inches='tight', dpi=fig.dpi, pad_inches=0.0)
 
 
 if __name__ == '__main__':

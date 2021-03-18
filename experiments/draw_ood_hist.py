@@ -38,10 +38,10 @@ def plot_by_uncertainty(result_file, auc=80, fontsize=16):
     plt.hist([ind_uncertainties, ood_uncertainties], 50, 
             density=True, histtype='bar', color=['blue', 'red'], 
             label=['in-distribution (%s)'%(args.ind_data), 'out-of-distribution (%s)'%(args.ood_data)])
-    plt.legend(fontsize=fontsize)
-    plt.text(0.6, 6, 'AUC = %.2lf'%(auc), fontsize=fontsize)
+    plt.legend(fontsize=fontsize-3)
+    plt.text(0.6, 6, 'AUC = %.2lf'%(auc), fontsize=fontsize-3)
     plt.xlabel('%s uncertainty'%(args.uncertainty), fontsize=fontsize)
-    plt.ylabel('density', fontsize=fontsize)
+    plt.ylabel('Density', fontsize=fontsize)
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
     plt.xlim(0, 1.01)
@@ -69,28 +69,28 @@ if __name__ == '__main__':
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_DNN_BALD_HMDB'
     auc = 75.07
-    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=18)
 
     # I3D BNN SVI on HMDB
     result_file = 'i3d/results/I3D_BNN_BALD_HMDB_result.npz'
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_BNN_BALD_HMDB'
     auc = 74.66
-    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=18)
 
     # I3D DRIVE (vanilla) on HMDB
     result_file = 'i3d/results/I3D_EDLNoKL_EDL_HMDB_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKL_EDL_HMDB'
     auc = 76.41
-    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=18)
 
     # I3D DRIVE (full) on HMDB
     result_file = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_HMDB_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_HMDB'
     auc = 77.08
-    plot_by_uncertainty(result_file, auc=auc, fontsize=16)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=18)
     
     ############################### MiT-v2 as unknown ######################################
 
@@ -100,25 +100,25 @@ if __name__ == '__main__':
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_DNN_BALD_MiT'
     auc = 79.14
-    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=20)
 
     # I3D BNN SVI on MiT-v2
     result_file = 'i3d/results/I3D_BNN_BALD_MiT_result.npz'
     args.uncertainty = 'BALD'
     args.result_prefix = 'i3d/results/I3D_BNN_BALD_MiT'
     auc = 79.50
-    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=20)
 
     # I3D DRIVE (vanilla) on MiT-v2
     result_file = 'i3d/results/I3D_EDLNoKL_EDL_MiT_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKL_EDL_MiT'
     auc = 81.43
-    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=20)
 
     # I3D DRIVE (full) on MiT-v2
     result_file = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_MiT_result.npz'
     args.uncertainty = 'EDL'
     args.result_prefix = 'i3d/results/I3D_EDLNoKLAvUCCED_EDL_MiT'
     auc = 81.54
-    plot_by_uncertainty(result_file, auc=auc, fontsize=17)
+    plot_by_uncertainty(result_file, auc=auc, fontsize=20)

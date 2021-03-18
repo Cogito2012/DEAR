@@ -126,7 +126,7 @@ def plot_all_curves(openness, values, line_styles, fontsize=18):
     plt.xticks(fontsize=fontsize)
     plt.yticks(np.arange(60, 81, 5), fontsize=fontsize)
     plt.grid('on')
-    plt.legend(fontsize=fontsize, loc='lower left')
+    plt.legend(fontsize=fontsize-10, loc='lower center', ncol=3, handletextpad=0.3, columnspacing=0.5)
     plt.tight_layout()
     result_path = os.path.dirname(args.result_prefix)
     if not os.path.exists(result_path):
@@ -165,15 +165,15 @@ def main_i3d():
     # result_file = 'i3d/results/I3D_EDLNoKL_EDL_%s_result.npz'%(args.ood_data)
     # openness_enn, maF1_enn = uncertainty_curvepoints(result_file, 0.004547, args.ind_ncls, args.ood_ncls, args.num_rand)
 
-    # DEAR (ours)
-    print('Compute Open maF1 for DEAR (ours)...')
+    # DEAR (full)
+    print('Compute Open maF1 for DEAR (full)...')
     result_file = 'i3d/results/I3D_EDLNoKLAvUCDebias_EDL_%s_result.npz'%(args.ood_data)
     openness_dear, maF1_dear = uncertainty_curvepoints(result_file, 0.004550, args.ind_ncls, args.ood_ncls, args.num_rand)
 
     # draw F1 curve
-    line_styles = {'DEAR (ours)': 'r-', 'SoftMax': 'b-', 'RPL': 'm-', 'BNN SVI': 'c-', 'MC Dropout': 'y-', 'OpenMax': 'k-'}
-    values = {'DEAR (ours)': maF1_dear, 'SoftMax': maF1_softmax, 'RPL': maF1_rpl, 'BNN SVI': maF1_bnn, 'MC Dropout': maF1_dnn, 'OpenMax': maF1_openmax}
-    plot_all_curves(openness_dear, values, line_styles, fontsize=22)
+    line_styles = {'DEAR (full)': 'r-', 'SoftMax': 'b-', 'RPL': 'm-', 'BNN SVI': 'c-', 'MC Dropout': 'y-', 'OpenMax': 'k-'}
+    values = {'DEAR (full)': maF1_dear, 'SoftMax': maF1_softmax, 'RPL': maF1_rpl, 'BNN SVI': maF1_bnn, 'MC Dropout': maF1_dnn, 'OpenMax': maF1_openmax}
+    plot_all_curves(openness_dear, values, line_styles, fontsize=30)
 
 
 def main_slowfast():
@@ -207,15 +207,15 @@ def main_slowfast():
     # result_file = 'slowfast/results/SlowFast_EDLNoKL_EDL_%s_result.npz'%(args.ood_data)
     # openness_enn, maF1_enn = uncertainty_curvepoints(result_file, 0.004547, args.ind_ncls, args.ood_ncls, args.num_rand)
 
-    # DEAR (ours)
-    print('Compute Open maF1 for DEAR (ours)...')
+    # DEAR (full)
+    print('Compute Open maF1 for DEAR (full)...')
     result_file = 'slowfast/results/SlowFast_EDLNoKLAvUCDebias_EDL_%s_result.npz'%(args.ood_data)
     openness_dear, maF1_dear = uncertainty_curvepoints(result_file, 0.004550, args.ind_ncls, args.ood_ncls, args.num_rand)
 
     # draw F1 curve
-    line_styles = {'DEAR (ours)': 'r-', 'SoftMax': 'b-', 'RPL': 'm-', 'BNN SVI': 'c-', 'MC Dropout': 'y-', 'OpenMax': 'k-'}
-    values = {'DEAR (ours)': maF1_dear, 'SoftMax': maF1_softmax, 'RPL': maF1_rpl, 'BNN SVI': maF1_bnn, 'MC Dropout': maF1_dnn, 'OpenMax': maF1_openmax}
-    plot_all_curves(openness_dear, values, line_styles, fontsize=20)
+    line_styles = {'DEAR (full)': 'r-', 'SoftMax': 'b-', 'RPL': 'm-', 'BNN SVI': 'c-', 'MC Dropout': 'y-', 'OpenMax': 'k-'}
+    values = {'DEAR (full)': maF1_dear, 'SoftMax': maF1_softmax, 'RPL': maF1_rpl, 'BNN SVI': maF1_bnn, 'MC Dropout': maF1_dnn, 'OpenMax': maF1_openmax}
+    plot_all_curves(openness_dear, values, line_styles, fontsize=25)
 
 
 def parse_args():

@@ -14,6 +14,7 @@ RESULT_PATH="experiments/tpn_slowonly/results"
 python experiments/draw_confusion_matrix.py \
     --ood_result ${RESULT_PATH}/TPN_SlowOnly_EDLlogNoKLAvUCDebias_EDL_${OOD_DATA}_result.npz \
     --uncertain_thresh 0.004555 \
+    --top_part \
     --save_file ${RESULT_PATH}/../results_confmat/confmat_EDLlogNoKLAvUCDebias_EDL_${OOD_DATA}.png
 
 python experiments/draw_confusion_matrix.py \
