@@ -15,27 +15,27 @@ python experiments/draw_confusion_matrix.py \
     --ood_result ${RESULT_PATH}/TPN_SlowOnly_EDLlogNoKLAvUCDebias_EDL_${OOD_DATA}_result.npz \
     --uncertain_thresh 0.004555 \
     --top_part \
-    --save_file ${RESULT_PATH}/../results_confmat/confmat_EDLlogNoKLAvUCDebias_EDL_${OOD_DATA}.png
+    --save_file ${RESULT_PATH}/../results_confmat/TPN_DEAR_${OOD_DATA}_ConfMat.png
 
-python experiments/draw_confusion_matrix.py \
-    --ood_result ${RESULT_PATH}/TPN_SlowOnly_EDLlogNoKLAvUC_EDL_${OOD_DATA}_result.npz \
-    --uncertain_thresh 0.495800 \
-    --save_file ${RESULT_PATH}/../results_confmat/confmat_EDLlogNoKLAvUC_EDL_${OOD_DATA}.png
+# python experiments/draw_confusion_matrix.py \
+#     --ood_result ${RESULT_PATH}/TPN_SlowOnly_EDLlogNoKLAvUC_EDL_${OOD_DATA}_result.npz \
+#     --uncertain_thresh 0.495800 \
+#     --save_file ${RESULT_PATH}/../results_confmat/confmat_EDLlogNoKLAvUC_EDL_${OOD_DATA}.png
 
-python experiments/draw_confusion_matrix.py \
-    --ood_result ${RESULT_PATH}/TPN_SlowOnly_EDLlogNoKL_EDL_${OOD_DATA}_result.npz \
-    --uncertain_thresh 0.495806 \
-    --save_file ${RESULT_PATH}/../results_confmat/confmat_EDLlogNoKL_EDL_${OOD_DATA}.png
+# python experiments/draw_confusion_matrix.py \
+#     --ood_result ${RESULT_PATH}/TPN_SlowOnly_EDLlogNoKL_EDL_${OOD_DATA}_result.npz \
+#     --uncertain_thresh 0.495806 \
+#     --save_file ${RESULT_PATH}/../results_confmat/confmat_EDLlogNoKL_EDL_${OOD_DATA}.png
 
-python experiments/draw_confusion_matrix.py \
-    --ood_result ${RESULT_PATH}/TPN_SlowOnly_Dropout_BALD_${OOD_DATA}_result.npz \
-    --uncertain_thresh 0.000096 \
-    --save_file ${RESULT_PATH}/../results_confmat/confmat_Dropout_BALD_${OOD_DATA}.png
+# python experiments/draw_confusion_matrix.py \
+#     --ood_result ${RESULT_PATH}/TPN_SlowOnly_Dropout_BALD_${OOD_DATA}_result.npz \
+#     --uncertain_thresh 0.000096 \
+#     --save_file ${RESULT_PATH}/../results_confmat/confmat_Dropout_BALD_${OOD_DATA}.png
 
-python experiments/draw_confusion_matrix.py \
-    --ood_result ${RESULT_PATH}/TPN_SlowOnly_BNN_BALD_${OOD_DATA}_result.npz \
-    --uncertain_thresh 0.000007 \
-    --save_file ${RESULT_PATH}/../results_confmat/confmat_BNN_BALD_${OOD_DATA}.png
+# python experiments/draw_confusion_matrix.py \
+#     --ood_result ${RESULT_PATH}/TPN_SlowOnly_BNN_BALD_${OOD_DATA}_result.npz \
+#     --uncertain_thresh 0.000007 \
+#     --save_file ${RESULT_PATH}/../results_confmat/confmat_BNN_BALD_${OOD_DATA}.png
 
 cd $pwd_dir
 echo "Experiments finished!"
