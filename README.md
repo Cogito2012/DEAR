@@ -13,16 +13,37 @@ International Conference on Computer Vision (**ICCV Oral**), 2021.
 1. [Datasets](#datasets)
 1. [Testing](#testing)
 1. [Training](#training)
-1. [Model Zoo](#results-and-model-zoo)
+1. [Model Zoo](#model-zoo)
 1. [Citation](#citation)
 
 ## Introduction
 We propose the **D**eep **E**vidential **A**ction **R**ecognition (**DEAR**) method to recognize actions in an open world. Specifically, we formulate the action recognition problem from the evidential deep learning (EDL) perspective and propose a novel model calibration method to regularize the EDL training. Besides, to mitigate the static bias of video representation, we propose a plug-and-play module to debias the learned representation through contrastive learning. Our DEAR model trained on UCF-101 dataset achieves significant and consistent performance gains based on multiple action recognition models, i.e., **I3D**, **TSM**, **SlowFast**, **TPN**, with HMDB-51 or MiT-v2 dataset as the unknown.
 
-<div align="center">
+<!-- <div align="center">
   <img src="assets/teaser.png" width="800px"/><br>
     Overview of the DEAR
-</div>
+</div> -->
+### Demo
+The following figures show the inference results by the SlowFast + DEAR model trained on UCF-101 dataset.
+
+<table>
+  <tr>
+    <td><p width=20px>UCF-101 </br> (Known)</p></td>
+    <td><img src="assets/gif/known/Basketball_v_Basketball_g05_c03.gif"  alt="1" width = 150px></td>
+    <td><img src="assets/gif/known/GolfSwing_v_GolfSwing_g06_c03.gif" alt="2" width = 150px></td>
+    <td><img src="assets/gif/known/IceDancing_v_IceDancing_g06_c02.gif" alt="2" width = 150px></td>
+    <td><img src="assets/gif/known/PommelHorse_v_PommelHorse_g02_c03.gif" alt="2" width = 150px></td>
+    <!-- <td><img src="assets/gif/known/SkyDiving_v_SkyDiving_g05_c05.gif" alt="2" width = 150px></td> -->
+   </tr> 
+   <tr>
+      <td><p width=20px>HMDB-51 </br> (Unknown)</p></td>
+      <td><img src="assets/gif/unknown/dribble_Basketball_Dribbling_Tips__2_dribble_f_cm_np1_le_med_3.gif" alt="4" width = 150px></td>
+      <td><img src="assets/gif/unknown/cartwheel_turnles!!_cartwheel_f_cm_np1_ri_med_3.gif" alt="4" width = 150px></td>
+      <td><img src="assets/gif/unknown/chew_Chewing_Gum_chew_h_nm_np1_fr_med_1.gif" alt="4" width = 150px></td>
+      <!-- <td><img src="assets/gif/unknown/hug_American_Idol_Awards_Given_to_7_Winners_at_Walt_Disney_World_hug_u_cm_np2_ba_med_3.gif" alt="4" width = 150px></td> -->
+      <td><img src="assets/gif/unknown/smoke_girl_smoking_smoke_h_cm_np1_ri_goo_0.gif" alt="4" width = 150px></td>
+   </tr>
+</table>
 
 ## Installation
 This repo is developed from [MMAction2](https://github.com/open-mmlab/mmaction2) codebase. Since MMAction2 is updated in a fast pace, most of the requirements and installation steps are similar to the version [MMAction2 v0.9.0](https://github.com/open-mmlab/mmaction2/tree/v0.9.0).
