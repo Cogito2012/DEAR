@@ -29,19 +29,19 @@ The following figures show the inference results by the SlowFast + DEAR model tr
 <table>
   <tr>
     <td><p width=20px>UCF-101 </br> (Known)</p></td>
-    <td><img src="assets/gif/known/Basketball_v_Basketball_g05_c03.gif"  alt="1" width = 150px></td>
-    <td><img src="assets/gif/known/GolfSwing_v_GolfSwing_g06_c03.gif" alt="2" width = 150px></td>
-    <td><img src="assets/gif/known/IceDancing_v_IceDancing_g06_c02.gif" alt="2" width = 150px></td>
-    <td><img src="assets/gif/known/PommelHorse_v_PommelHorse_g02_c03.gif" alt="2" width = 150px></td>
-    <!-- <td><img src="assets/gif/known/SkyDiving_v_SkyDiving_g05_c05.gif" alt="2" width = 150px></td> -->
+    <td><img src="assets/gif/known/Basketball_v_Basketball_g05_c03.gif"  alt="1" width = 160px height=120px></td>
+    <td><img src="assets/gif/known/GolfSwing_v_GolfSwing_g06_c03.gif" alt="2" width = 160px height=120px></td>
+    <td><img src="assets/gif/known/IceDancing_v_IceDancing_g06_c02.gif" alt="3" width = 160px height=120px></td>
+    <td><img src="assets/gif/known/PommelHorse_v_PommelHorse_g02_c03.gif" alt="4" width = 160px height=120px></td>
+    <!-- <td><img src="assets/gif/known/SkyDiving_v_SkyDiving_g05_c05.gif" alt="5" width = 150px></td> -->
    </tr> 
    <tr>
       <td><p width=20px>HMDB-51 </br> (Unknown)</p></td>
-      <td><img src="assets/gif/unknown/dribble_Basketball_Dribbling_Tips__2_dribble_f_cm_np1_le_med_3.gif" alt="4" width = 150px></td>
-      <td><img src="assets/gif/unknown/cartwheel_turnles!!_cartwheel_f_cm_np1_ri_med_3.gif" alt="4" width = 150px></td>
-      <td><img src="assets/gif/unknown/chew_Chewing_Gum_chew_h_nm_np1_fr_med_1.gif" alt="4" width = 150px></td>
-      <!-- <td><img src="assets/gif/unknown/hug_American_Idol_Awards_Given_to_7_Winners_at_Walt_Disney_World_hug_u_cm_np2_ba_med_3.gif" alt="4" width = 150px></td> -->
-      <td><img src="assets/gif/unknown/smoke_girl_smoking_smoke_h_cm_np1_ri_goo_0.gif" alt="4" width = 150px></td>
+      <td><img src="assets/gif/unknown/dribble_Basketball_Dribbling_Tips__2_dribble_f_cm_np1_le_med_3.gif" alt="6" width = 160px height=120px></td>
+      <td><img src="assets/gif/unknown/cartwheel_turnles!!_cartwheel_f_cm_np1_ri_med_3.gif" alt="7" width = 160px height=120px></td>
+      <td><img src="assets/gif/unknown/chew_Chewing_Gum_chew_h_nm_np1_fr_med_1.gif" alt="8" width = 160px height=120px></td>
+      <!-- <td><img src="assets/gif/unknown/hug_American_Idol_Awards_Given_to_7_Winners_at_Walt_Disney_World_hug_u_cm_np2_ba_med_3.gif" alt="9" width = 150px></td> -->
+      <td><img src="assets/gif/unknown/smoke_girl_smoking_smoke_h_cm_np1_ri_goo_0.gif" alt="10" width = 160px height=120px></td>
    </tr>
 </table>
 
