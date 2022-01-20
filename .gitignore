@@ -132,7 +132,7 @@ experiments/*/logs
 tools/data/mit/log*
 tools/data/*log*
 .github/workflows
-demo/hmdb51
-demo/ucf101
+demo/hmdb51*
+demo/ucf101*
 demo/*.avi
 demo/*.mp4
