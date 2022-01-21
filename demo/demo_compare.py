@@ -198,16 +198,21 @@ def run_visualization(result_dir, test_data, model, threshold, mapping_open, map
     for vid_file, gt_cls in zip(selected_files, gt_classes):
         if baseline == 'dear':
             # get the NN output logits
-            scores = inference_recognizer(model, vid_file)  # (K,) ndarray
-            pred_cls, uncertainty, evidence = evidential_prediction(scores)
-        elif baseline == 'bnn':
-            scores = inference_recognizer(model, vid_file, npass=10)  # (K, 10), 10 forward passes
-            uncertainty = compute_uncertainty(np.expand_dims(scores, axis=0))[0]  # scalar
+            logits = inference_recognizer(model, vid_file)  # (K,) ndarray
+            pred_cls, uncertainty, evidence = evidential_prediction(logits)
+        elif baseline in ['bnn', 'mc_dropout']:
+            scores_multi = inference_recognizer(model, vid_file, npass=10)  # (K, 10), 10 forward passes
+            uncertainty = compute_uncertainty(np.expand_dims(scores_multi, axis=0))[0]  # scalar
             uncertainty = np.fabs(uncertainty)
-            conf_mean = np.mean(scores, axis=-1)
-            pred_cls = int(np.argmax(conf_mean))
+            scores = np.mean(scores_multi, axis=-1)
+            pred_cls = int(np.argmax(scores))
+        elif baseline == 'softmax':
+            scores = inference_recognizer(model, vid_file)
+            pred_cls = int(np.argmax(scores))
+            uncertainty = 1 - np.max(scores)
+            
         if uncertainty > threshold:
-            pred_cls = scores.shape[0]  # K, predicted as the unknown
+            pred_cls = model.cls_head.num_classes  # K, predicted as the unknown
         # visualization
         video_data = read_video(vid_file)
         real_class_name = mapping_open[gt_cls] if mapping_unknown is None else mapping_unknown[gt_cls]
@@ -215,8 +220,8 @@ def run_visualization(result_dir, test_data, model, threshold, mapping_open, map
         displayed_class_name = mapping_open[gt_cls] if mapping_unknown is None else 'Unknown'
         if baseline == 'dear':
             fig = plot_evidence(displayed_class_name, mapping_open[pred_cls], uncertainty / threshold, evidence)
-        elif baseline == 'bnn':
-            fig = plot_uncertainty(displayed_class_name, mapping_open[pred_cls], uncertainty / threshold, conf_mean)
+        elif baseline in ['bnn', 'mc_dropout', 'softmax']:
+            fig = plot_uncertainty(displayed_class_name, mapping_open[pred_cls], uncertainty / threshold, scores)
         # create GIF output
         create_gif(vis_file, fig, video_data)
         plt.close('all')
@@ -245,15 +250,15 @@ def main():
         'dear': config_path.format('enn'),
         'bnn': config_path.format('bnn'),
         'softmax': config_path.format('dnn'),
-        'rpl': config_path.format('rpl')
+        'mc_dropout': config_path.format('dnn')
     }
     weights = {
         'dear': weight_path.format('edlnokl_avuc_debias'),
         'bnn': weight_path.format('bnn'),
         'softmax': weight_path.format('dnn'),
-        'rpl': weight_path.format('rpl')
+        'mc_dropout': weight_path.format('dnn')
     }
-    thresholds = {'dear': 0.004552, 'bnn': 0.000010, 'softmax': 0.000065, 'rpl': 0.997780}
+    thresholds = {'dear': 0.004552, 'bnn': 0.000010, 'softmax': 1-0.997915, 'mc_dropout': 0.000065}
     set_deterministic(seed=123)
 
     # build the recognizer from a config file and checkpoint file/url
@@ -262,10 +267,10 @@ def main():
         # make sure the outputs of the mode are the NN logits
         assert model.cfg.evidence == 'exp', 'Use exponential evidence by setting cfg.evidence=exp !'
         assert model.cfg.test_cfg['average_clips'] == 'score', 'Please set average_clips==score in cfg.test_cfg!'
-    if baseline == 'bnn':
+    if baseline in ['bnn', 'softmax']:
         assert model.cfg.test_cfg['average_clips'] == 'prob', 'Please set average_clips==prob in cfg.test_cfg!'
         model.test_cfg.npass = 1  # we will use multiple forward passes in this script later.
-    if baseline == 'softmax':
+    if baseline == 'mc_dropout':
         model.apply(apply_dropout)
     model.cfg.data.test.test_mode = True
 
@@ -304,7 +309,7 @@ def main():
 if __name__ == '__main__':
     
     baseline = sys.argv[1]
-    assert baseline in ['dear', 'bnn', 'softmax','rpl']
+    assert baseline in ['dear', 'bnn', 'softmax','mc_dropout']
     main()
 
 
