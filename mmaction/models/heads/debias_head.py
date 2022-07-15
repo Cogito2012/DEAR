@@ -134,8 +134,8 @@ class DebiasHead(BaseHead):
             """Unbiased estimator of Hilbert-Schmidt Independence Criterion
             Song, Le, et al. "Feature selection via dependence maximization." 2012.
             """
-            tK = kernel_XX - torch.diag(kernel_XX)
-            tL = kernel_YY - torch.diag(kernel_YY)
+            tK = kernel_XX - torch.diag(torch.diag(kernel_XX))
+            tL = kernel_YY - torch.diag(torch.diag(kernel_YY))
             hsic = (
                 torch.trace(tK @ tL)
                 + (torch.sum(tK) * torch.sum(tL) / (N - 1) / (N - 2))
