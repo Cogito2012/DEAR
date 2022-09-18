@@ -104,6 +104,11 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+.github
+.pylintrc
+.pre-commit-config.yaml
+.readthedocs.yml
+
 # custom
 /data
 .vscode

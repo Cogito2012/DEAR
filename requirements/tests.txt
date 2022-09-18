@@ -6,3 +6,4 @@ pytest
 pytest-runner
 xdoctest >= 0.10.0
 yapf
+terminaltables==3.1.0
