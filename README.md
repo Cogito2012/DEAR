@@ -1,6 +1,10 @@
 # DEAR (Deep Evidential Action Recognition)
 [Project](https://www.rit.edu/actionlab/dear) **|** [Paper & Supp](https://arxiv.org/abs/2107.10161)
 
+:boom:**Update**: 
+- Thanks to the [issue#4](https://github.com/Cogito2012/DEAR/issues/4), the implementation of HSIC is incorrect due to the misunderstanding of `torch.diag`. Note that the issue even exists in our referred work [ReBias (ICML'21)](https://github.com/clovaai/rebias/blob/79d1d1d892412a5e3b07fbea8b776461bed0e096/criterions/hsic.py#L86). We have corrected this issue here [mmaction/models/heads/debias_head.py#L137](https://github.com/Cogito2012/DEAR/blob/12f8edd0d90d5aca9f443daea1c6b527dee5fb5b/mmaction/models/heads/debias_head.py#L137) but do not guarantee good performance.
+- For a reasonable AUC evaluation, threshold is not necessary in practice. We recommend use the updated evaluation code script here: [`experiments/compare_openness_new.py`](experiments/compare_openness_new.py), but do not guarantee a good performance. 
+
 [Wentao Bao](https://cogito2012.github.io/homepage), 
 [Qi Yu](https://www.rit.edu/mining/qi-yu), 
 [Yu Kong](https://people.rit.edu/yukics/)
