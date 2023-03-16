@@ -143,7 +143,7 @@ a. Closed Set Evaluation.
 Top-K accuracy and mean class accuracy will be reported.
 ```shell
 cd experiments/i3d
-bash evaluate_i3d_edlnokl_avuc_debias_ucf101.sh
+bash evaluate_i3d_edlnokl_avuc_debias_ucf101.sh 0
 ```
 
 b. Get Uncertainty Threshold. 
@@ -155,7 +155,15 @@ cd experiments/i3d
 bash run_get_threshold.sh 0 edlnokl_avuc_debias 2
 ```
 
-c. Open Set Evaluation and Comparison.
+c. Out-of-Distribution Detection.
+
+The uncertainty distribution figure of a specified model will be reported.
+```shell
+cd experiments/i3d
+bash run_ood_detection.sh 0 HMDB edlnokl_avuc_debias
+```
+
+d. Open Set Evaluation and Comparison.
 
 The open set evaluation metrics and openness curves will be reported.
 
@@ -164,14 +172,6 @@ The open set evaluation metrics and openness curves will be reported.
 cd experiments/i3d
 bash run_openness.sh HMDB  # use HMDB-51 test set as the Unknown
 bash run_openness.sh MiT  # use MiT-v2 test set as the Unknown
-```
-
-d. Out-of-Distribution Detection.
-
-The uncertainty distribution figure of a specified model will be reported.
-```shell
-cd experiments/i3d
-bash run_ood_detection.sh 0 HMDB edlnokl_avuc_debias
 ```
 
 e. Draw Open Set Confusion Matrix

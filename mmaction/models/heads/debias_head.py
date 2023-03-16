@@ -43,7 +43,7 @@ class DebiasHead(BaseHead):
         self.alternative = alternative
         self.f1_conv3d = ConvModule(
             in_channels,
-            in_channels * 2, (1, 3, 3),
+            in_channels * 2, 3,
             stride=(1, 2, 2),
             padding=(0, 1, 1),
             bias=False,
@@ -52,7 +52,7 @@ class DebiasHead(BaseHead):
         if bias_input:
             self.f2_conv3d = ConvModule(
                 in_channels,
-                in_channels * 2, (1, 3, 3),
+                in_channels * 2, 3,
                 stride=(1, 2, 2),
                 padding=(0, 1, 1),
                 bias=False,
@@ -61,7 +61,7 @@ class DebiasHead(BaseHead):
         if bias_network:
             self.f3_conv2d = ConvModule(
                 in_channels,
-                in_channels * 2, (3, 3),
+                in_channels * 2, 3,
                 stride=(2, 2),
                 padding=(1, 1),
                 bias=False,
