@@ -117,7 +117,7 @@ This repo uses standard video action datasets, i.e., UCF-101 for closed set trai
 
 ## Testing
 
-To test our pre-trained models (see the [Model Zoo](#model-zoo)), you need to download a model file and unzip it under `work_dir`. Let's take the `I3D`-based DEAR model as an example. First, download the [pre-trained I3D-based models](https://drive.google.com/drive/folders/1TguABfmy0PE6jx9fflePQySe3jXWnsc0?usp=sharing), where the full DEAR model is saved in the folder `finetune_ucf101_i3d_edlnokl_avuc_debias`. The following directory tree is for your reference to place the downloaded files.
+To test our pre-trained models (see the [Model Zoo](#model-zoo)), you need to download a model file and unzip it under `work_dir`. Let's take the `I3D`-based DEAR model as an example. First, download the [pre-trained I3D-based models](https://drive.google.com/drive/folders/1rsrqm0Ms0Ik2rrxzIoAbaykADpi9M4HF?usp=sharing), where the full DEAR model is saved in the folder `finetune_ucf101_i3d_edlnokl_avuc_debias`. The following directory tree is for your reference to place the downloaded files.
 ```shell
 work_dirs    
 ├── i3d
@@ -215,12 +215,12 @@ Then, you can monitor the tensorboard by the port number `16008` by typing `http
 The pre-trained weights (checkpoints) are available below.
 | Model | Checkpoint | Train Config | Test Config | Open maF1 (%) | Open Set AUC (%) | Closed Set ACC (%) |
 |:--|:--:|:--:|:--:|:--:|:--:|:--:|
-|I3D + DEAR |[ckpt](https://drive.google.com/file/d/1oRNBH0aAhFpcJSBqWlT4x0ru7iHfdndW/view?usp=sharing)| [train](configs/recognition/i3d/finetune_ucf101_i3d_edlnokl_avuc_debias.py) | [test](configs/recognition/i3d/inference_i3d_enn.py) | 77.24 / 69.98 | 77.08 / 81.54 | 93.89 |
-|TSM + DEAR | [ckpt](https://drive.google.com/file/d/1TM1c28jRyZpOrWqwaQPYXFBZJXHQp__9/view?usp=sharing)| [train](configs/recognition/tsm/finetune_ucf101_tsm_edlnokl_avuc_debias.py) | [test](configs/recognition/tsm/inference_tsm_enn.py) | 84.69 / 70.15 | 78.65 / 83.92 | 94.48 |
-|TPN + DEAR | [ckpt](https://drive.google.com/file/d/1jorfFMMzWd5xDCfZsemoWD8Rg7DbH16u/view?usp=sharing)| [train](configs/recognition/tpn/tpn_slowonly_edlloss_nokl_avuc_debias_r50_8x8x1_150e_kinetics_rgb.py) | [test](configs/recognition/tpn/inference_tpn_slowonly_enn.py) | 81.79 / 71.18 | 79.23 / 81.80 | 96.30 |
-|SlowFast + DEAR |[ckpt](https://drive.google.com/file/d/13LNRv0BYkVfzCA95RB5dCp53MmErRL5D/view?usp=sharing)| [train](configs/recognition/slowfast/finetune_ucf101_slowfast_edlnokl_avuc_debias.py) | [test](configs/recognition/slowfast/inference_slowfast_enn.py) | 85.48 / 77.28 | 82.94 / 86.99 | 96.48 |
+|I3D + DEAR |[ckpt](https://drive.google.com/file/d/1KONQZbhxilAmArXmAeF_ZlsE6wDOZCRR/view?usp=sharing)| [train](configs/recognition/i3d/finetune_ucf101_i3d_edlnokl_avuc_debias.py) | [test](configs/recognition/i3d/inference_i3d_enn.py) | 77.24 / 69.98 | 77.08 / 81.54 | 93.89 |
+|TSM + DEAR | [ckpt](https://drive.google.com/file/d/1wYOUlzi2hpLgUJgv0lOH5gb5OcVzw4eb/view?usp=sharing)| [train](configs/recognition/tsm/finetune_ucf101_tsm_edlnokl_avuc_debias.py) | [test](configs/recognition/tsm/inference_tsm_enn.py) | 84.69 / 70.15 | 78.65 / 83.92 | 94.48 |
+|TPN + DEAR | [ckpt](https://drive.google.com/file/d/1cW86-a-AuCR8NUSSG9kec-GajE51V53Y/view?usp=sharing)| [train](configs/recognition/tpn/tpn_slowonly_edlloss_nokl_avuc_debias_r50_8x8x1_150e_kinetics_rgb.py) | [test](configs/recognition/tpn/inference_tpn_slowonly_enn.py) | 81.79 / 71.18 | 79.23 / 81.80 | 96.30 |
+|SlowFast + DEAR |[ckpt](https://drive.google.com/file/d/1tzgjOKUrL0L9JopBEDRDFOaJAUEnliQe/view?usp=sharing)| [train](configs/recognition/slowfast/finetune_ucf101_slowfast_edlnokl_avuc_debias.py) | [test](configs/recognition/slowfast/inference_slowfast_enn.py) | 85.48 / 77.28 | 82.94 / 86.99 | 96.48 |
 
-For other checkpoints of the compared baseline models, please download them in the [Google Drive](https://drive.google.com/drive/folders/1M8SryYc3mx27G_uMuynr8CIYRlKU17WO?usp=sharing).
+For other checkpoints of the compared baseline models, please download them in the [Google Drive](https://drive.google.com/drive/folders/1OMMKdr0t3aEjN8MEv6DdxRHqAngKxOZT?usp=sharing).
 
 
 ## Citation
